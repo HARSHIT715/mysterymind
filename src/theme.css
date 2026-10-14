@@ -112,3 +112,13 @@ mark{background:rgba(255,77,109,.35);color:#fff;border-radius:2px;padding:0 2px;
 @media (prefers-reduced-motion:reduce){body::before{animation:none}.ph h1::after{animation:none}}
 @media (max-width:760px){.ccard:nth-child(n){transform:none}.top::after{height:5px}}
 @media print{body::before,body::after{display:none}.md::after{display:none}}
+
+/* ===== scroll fix: let the page scroll normally ===== */
+html,body{height:auto;min-height:100%}
+body{overflow-y:auto;overflow-x:hidden}
+.app{height:auto;min-height:100vh;min-height:100dvh;align-items:flex-start}
+.side{position:sticky;top:0;height:100vh;height:100dvh;align-self:flex-start;overflow-y:auto}
+.main{min-height:100vh;min-height:100dvh;overflow:visible}
+.top{position:sticky;top:0;z-index:20}
+.content{flex:1 0 auto;overflow:visible}
+@media print{.app,.main,.content{display:block;min-height:0}}

@@ -343,10 +343,10 @@ function shell(){
 }
 function render(reset){
   const act=document.activeElement,fid=act&&act.id,ss=act&&act.selectionStart,se=act&&act.selectionEnd;
-  const sc=$('#content'),st=sc?sc.scrollTop:0;
+  const st=window.pageYOffset||0;
   const root=$('#app');
   root.innerHTML=shell();
-  const n=$('#content');if(n) n.scrollTop=reset?0:st;
+  if(window.scrollTo) window.scrollTo(0,reset?0:st);
   if(fid){const e=document.getElementById(fid);if(e){e.focus();try{if(ss!=null) e.setSelectionRange(ss,se);}catch(_){}}}
   if(S.search.open&&S.search.focus){const e=document.getElementById('in-search.q');if(e) e.focus();S.search.focus=false;}
   if($('#boardsvg')&&!S.board.vb) fitBoard();
