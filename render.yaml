@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: mysterymind
+    runtime: static
+    buildCommand: echo "static site, no build needed"
+    staticPublishPath: .

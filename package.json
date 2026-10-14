@@ -1,0 +1,10 @@
+{
+  "name": "mysterymind",
+  "version": "1.0.0",
+  "description": "MysteryMind: AI Logic Detective. Unification and forward-chaining demo with fictional detective cases.",
+  "scripts": {
+    "build": "node build.js",
+    "start": "npx serve ."
+  },
+  "license": "MIT"
+}

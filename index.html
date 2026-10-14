@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MysteryMind: AI Logic Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Special+Elite&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F14;--bg2:#101720;--panel:#151E29;--panel2:#1B2633;--line:#27374A;--line2:#324559;
+  --amber:#D6A85F;--blue:#82A9C8;--text:#F1F2F4;--muted:#9AA6B2;--ok:#66C69A;--warn:#E5B567;--err:#E47777;
+  --string:#FF5C7A;--mint:#6FD1C1;--violet:#B39DDB;--pink:#E58FB0;
+  --ui:'Space Grotesk','Segoe UI',system-ui,sans-serif;--type:'Special Elite','Courier New',monospace;--mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);font-size:14px;line-height:1.5;overflow:hidden;
+  background-image:radial-gradient(circle at 1px 1px,rgba(130,169,200,.07) 1px,transparent 0),linear-gradient(180deg,rgba(214,168,95,.04),transparent 280px);background-size:22px 22px,100% 100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#2c3d52;border-radius:6px}::-webkit-scrollbar-track{background:transparent}
+.ic{width:18px;height:18px;flex:none}
+.mono{font-family:var(--mono);font-size:12.5px}
+.typed{font-family:var(--type)}
+.muted{color:var(--muted)}
+.app{display:flex;height:100%;width:100%}
+/* sidebar */
+.side{width:244px;flex:none;background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;transition:width .2s;overflow:hidden}
+.side.col{width:68px}
+.logo{display:flex;align-items:center;gap:10px;padding:16px 16px 14px;border-bottom:1px dashed var(--line)}
+.logo-mark{width:38px;height:38px;flex:none;border-radius:50%;background:var(--amber);color:#1a1205;display:grid;place-items:center;transform:rotate(-8deg);box-shadow:3px 3px 0 var(--string)}
+.logo-t{font-family:var(--type);font-size:20px;line-height:1;white-space:nowrap}
+.logo-s{font-size:10.5px;color:var(--muted);white-space:nowrap;margin-top:3px}
+.nav{padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow:auto;flex:1}
+.nav button{display:flex;align-items:center;gap:12px;background:none;border:0;border-left:3px solid transparent;color:var(--muted);padding:9px 12px;border-radius:4px;text-align:left;white-space:nowrap;transition:background .15s,color .15s}
+.nav button:hover{background:var(--panel);color:var(--text)}
+.nav button.on{background:var(--panel2);color:var(--amber);border-left-color:var(--amber)}
+.side.col .nav span,.side.col .logo>div:last-child,.side.col .sfoot{display:none}
+.sfoot{border-top:1px dashed var(--line);padding:12px 14px;font-size:11.5px;color:var(--muted);display:grid;gap:6px}
+.sfoot b{color:var(--text);font-weight:500}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+/* main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line);background:rgba(16,23,32,.92)}
+.crumb{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.crumb b{color:var(--text);font-weight:500}
+.gs{flex:1;max-width:460px;margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 12px;color:var(--muted);text-align:left}
+.gs:hover{border-color:var(--amber)}
+.kbd{margin-left:auto;font-family:var(--mono);font-size:11px;border:1px solid var(--line2);border-radius:4px;padding:1px 6px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--panel2);border:1px solid var(--line2);display:grid;place-items:center;font-size:12px;color:var(--amber);flex:none}
+.content{flex:1;overflow:auto;padding:22px 26px 40px}
+/* controls */
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line2);border-radius:5px;padding:7px 13px;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.btn.pri{background:var(--amber);color:#1a1205;border-color:var(--amber);font-weight:600;box-shadow:3px 3px 0 var(--string)}
+.btn.pri:hover{color:#1a1205;transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--string)}
+.btn.sm{padding:4px 9px;font-size:12.5px}
+.btn.danger:hover{border-color:var(--err);color:var(--err)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.on{border-color:var(--amber);color:var(--amber);background:rgba(214,168,95,.1)}
+input[type=text],input[type=search],select,textarea{background:var(--bg2);border:1px solid var(--line2);border-radius:5px;padding:7px 10px;min-width:0}
+textarea{width:100%;font-family:var(--mono);font-size:12.5px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--amber);outline:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.grow{flex:1;min-width:140px}
+/* typography blocks */
+.ph{margin-bottom:18px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+.ph h1{font-family:var(--type);font-weight:400;font-size:30px;margin:0;line-height:1.15}
+.ph p{margin:4px 0 0;color:var(--muted);max-width:640px}
+h2.sh{font-family:var(--type);font-weight:400;font-size:18px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+h2.sh::after{content:'';flex:1;height:0;border-top:1px dashed var(--line2)}
+h3{font-size:13px;margin:0 0 6px;color:var(--amber);font-weight:600}
+.stamp{display:inline-block;border:2px solid var(--string);color:var(--string);font-family:var(--type);padding:1px 10px;transform:rotate(-4deg);font-size:13px;letter-spacing:.06em;border-radius:3px;opacity:.9}
+.lbl{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+/* panels */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:15px}
+.panel.p0{padding:0;overflow:hidden}
+.panel h2.sh{margin-bottom:12px}
+.g2,.g3,.g4,.g32{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g32{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+.mt{margin-top:16px}.mb{margin-bottom:14px}
+.stat{position:relative;overflow:hidden}
+.stat .n{font-family:var(--type);font-size:34px;line-height:1.1;color:var(--amber)}
+.stat::after{content:'';position:absolute;right:-18px;top:-18px;width:70px;height:70px;border:2px dashed var(--line2);border-radius:50%}
+.hero{background:linear-gradient(120deg,var(--panel2),var(--panel));border:1px solid var(--line2);border-radius:8px;padding:26px 28px;position:relative;overflow:hidden;margin-bottom:16px}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(214,168,95,.05) 14px 16px);pointer-events:none}
+.hero h1{font-family:var(--type);font-weight:400;font-size:38px;margin:8px 0 6px;position:relative}
+.hero p{max-width:620px;color:var(--muted);margin:0 0 18px;position:relative}
+.hero .row{position:relative}
+.hero .stamp{position:absolute;right:26px;top:22px}
+/* badges */
+.bd{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:1px 8px;border-radius:99px;border:1px solid var(--line2);color:var(--muted);white-space:nowrap}
+.b-verified,.b-active,.b-easy,.b-high{color:var(--ok);border-color:rgba(102,198,154,.45)}
+.b-reported,.b-medium,.b-under{color:var(--warn);border-color:rgba(229,181,103,.45)}
+.b-derived,.b-blue{color:var(--blue);border-color:rgba(130,169,200,.5)}
+.b-hypothesis{color:var(--pink);border-color:rgba(229,143,176,.5)}
+.b-unknown,.b-unverified,.b-low,.b-unresolved{color:var(--err);border-color:rgba(228,119,119,.45)}
+.b-hard{color:var(--string);border-color:rgba(255,92,122,.5)}
+.b-temp{color:var(--mint);border-color:rgba(111,209,193,.5)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line2);border-radius:4px;padding:2px 8px;font-size:12.5px;cursor:pointer;color:var(--text)}
+.chip:hover{border-color:var(--amber);color:var(--amber)}
+.chip.mono{font-family:var(--mono);font-size:12px}
+.chip.sel{border-color:var(--amber);background:rgba(214,168,95,.12);color:var(--amber)}
+.sub{display:inline-flex;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;background:rgba(214,168,95,.1);border:1px solid rgba(214,168,95,.45);color:var(--amber);border-radius:4px;padding:1px 8px}
+/* case cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.cards.list{grid-template-columns:1fr}
+.ccard{background:var(--panel);border:1px solid var(--line);border-radius:6px;position:relative;display:flex;flex-direction:column;transition:transform .15s,border-color .15s;margin-top:8px}
+.ccard::before{content:'';position:absolute;top:-9px;left:50%;width:78px;height:18px;background:rgba(214,168,95,.55);transform:translateX(-50%) rotate(-2deg);z-index:2}
+.ccard:nth-child(even)::before{transform:translateX(-50%) rotate(2.5deg);background:rgba(130,169,200,.5)}
+.ccard:hover{transform:translateY(-2px) rotate(-.2deg);border-color:var(--amber)}
+.cards.list .ccard{flex-direction:row}
+.thumb{height:104px;position:relative;display:grid;place-items:center;overflow:hidden;border-bottom:1px solid var(--line)}
+.cards.list .thumb{width:170px;height:auto;border-bottom:0;border-right:1px solid var(--line);flex:none}
+.thumb svg{width:46px;height:46px;color:rgba(255,255,255,.88);position:relative}
+.thumb i{position:absolute;right:6px;bottom:4px;font-size:9.5px;font-style:normal;color:rgba(255,255,255,.55)}
+.cbody{padding:13px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.ctitle{font-family:var(--type);font-size:17px;line-height:1.25}
+.cmeta{display:flex;gap:6px;flex-wrap:wrap}
+.cstat{display:flex;gap:14px;color:var(--muted);font-size:12.5px;margin-top:auto}
+mark{background:rgba(214,168,95,.3);color:var(--text);padding:0 1px;border-radius:2px}
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:16px 0;overflow:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 14px;color:var(--muted);white-space:nowrap;margin-bottom:-1px}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{color:var(--amber);border-bottom-color:var(--amber)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:5px;overflow:hidden}
+.seg button{background:var(--bg2);border:0;padding:6px 11px;color:var(--muted)}
+.seg button.on{background:var(--panel2);color:var(--amber)}
+.bar{height:6px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--amber),var(--string));transition:width .4s}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:13px}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+ul.plain{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.li{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:4px;padding:8px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+.li:hover,.li.sel{border-color:var(--amber);background:rgba(214,168,95,.07)}
+.li.v{border-left-color:var(--ok)}.li.r{border-left-color:var(--warn)}.li.d{border-left-color:var(--blue)}.li.h{border-left-color:var(--pink)}.li.u{border-left-color:var(--err)}
+.empty{border:2px dashed var(--line2);border-radius:8px;padding:30px;text-align:center;color:var(--muted)}
+/* polaroid avatar */
+.pol{background:#e9e4d6;padding:6px 6px 22px;width:104px;flex:none;transform:rotate(-3deg);box-shadow:3px 4px 0 rgba(0,0,0,.4);position:relative}
+.pol div{height:90px;display:grid;place-items:center;font-family:var(--type);font-size:32px;color:#1a1205}
+.pol span{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-family:var(--type);font-size:11px;color:#3a3326}
+.pcard{display:flex;gap:12px;align-items:center;text-align:left;width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:9px 11px}
+.pcard:hover,.pcard.sel{border-color:var(--amber);background:rgba(214,168,95,.07)}
+.pcard .mini{width:38px;height:38px;border-radius:4px;display:grid;place-items:center;font-family:var(--type);color:#1a1205;flex:none;transform:rotate(-3deg)}
+/* timeline */
+.tl{position:relative;padding-left:30px}
+.tl::before{content:'';position:absolute;left:11px;top:6px;bottom:6px;border-left:2px dashed var(--line2)}
+.tle{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.tle:hover{border-color:var(--amber)}
+.tle::before{content:'';position:absolute;left:-26px;top:14px;width:12px;height:12px;border-radius:50%;background:var(--ok);border:2px solid var(--bg)}
+.tle.r::before{background:var(--warn)}.tle.u::before,.tle.gap::before{background:var(--err)}
+.tle.gap{border-style:dashed;background:transparent}
+.tle.cf{border-color:rgba(255,92,122,.55)}
+.tt{font-family:var(--mono);color:var(--amber);font-size:13px}
+.flag{color:var(--string);font-size:12.5px;margin-top:6px;display:flex;gap:6px}
+/* drawer & modals */
+.scrim{position:fixed;inset:0;background:rgba(5,8,12,.6);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--panel);border-left:2px solid var(--amber);z-index:41;display:flex;flex-direction:column;animation:slide .2s ease-out;padding-top:env(safe-area-inset-top,0px)}
+@keyframes slide{from{transform:translateX(30px);opacity:.4}}
+.dh{padding:16px 18px;border-bottom:1px dashed var(--line2);display:flex;gap:10px;align-items:flex-start}
+.db{padding:16px 18px;overflow:auto;display:grid;gap:14px;align-content:start}
+.modal{position:fixed;left:50%;top:9%;transform:translateX(-50%);width:min(720px,94%);max-height:80%;background:var(--panel);border:1px solid var(--line2);border-radius:9px;z-index:42;display:flex;flex-direction:column;box-shadow:6px 6px 0 rgba(255,92,122,.5)}
+.modal.sm{top:28%;width:min(420px,94%);padding:20px}
+.sr{overflow:auto;padding:10px 14px 16px}
+.sg{margin-top:12px}
+.hit{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding:7px 10px;margin-top:6px}
+.hit:hover{border-color:var(--amber)}
+.toast{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--amber);color:#1a1205;padding:8px 16px;border-radius:5px;z-index:60;font-weight:600;box-shadow:3px 3px 0 var(--string)}
+/* reasoning */
+.rg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr);gap:14px;align-items:start}
+.scroll{max-height:380px;overflow:auto;display:grid;gap:6px;align-content:start;padding-right:3px}
+.term{background:#080b10;border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:12.5px;padding:10px;max-height:420px;overflow:auto;position:relative}
+.ev{padding:4px 8px;border-left:2px solid var(--line2);margin-bottom:3px;border-radius:0 3px 3px 0;color:var(--muted)}
+.ev.cur{background:rgba(214,168,95,.14);border-left-color:var(--amber);color:var(--text)}
+.ev.ok{border-left-color:var(--ok)}.ev.no{border-left-color:var(--err)}.ev.dv{border-left-color:var(--blue);color:var(--text);background:rgba(130,169,200,.08)}.ev.hd{color:var(--amber);border-left-color:var(--amber);margin-top:8px}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chain .cn{background:var(--bg2);border:1px solid var(--line2);border-radius:5px;padding:5px 9px;font-size:12.5px;cursor:pointer;text-align:left}
+.chain .cn:hover{border-color:var(--amber)}
+.chain .ar{color:var(--amber)}
+.step{background:var(--bg2);border:1px dashed var(--amber);border-radius:6px;padding:10px 12px;display:grid;gap:6px;margin-bottom:10px}
+.err{color:var(--err);font-size:12.5px;margin-top:4px}
+.okc{color:var(--ok)}
+/* board */
+.bwrap{position:relative;border:1px solid var(--line);border-radius:7px;background:#0a0e13;background-image:radial-gradient(circle at 1px 1px,rgba(130,169,200,.12) 1px,transparent 0);background-size:20px 20px;height:560px;overflow:hidden}
+#boardsvg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.bn rect{fill:var(--panel2);stroke:var(--line2);stroke-width:1}
+.bn text{fill:var(--text);font-size:11.5px;font-family:var(--ui);pointer-events:none}
+.bn{cursor:pointer;transition:opacity .15s}
+.bn:hover rect{stroke:var(--amber)}
+.bn.sel rect{stroke:var(--amber);stroke-width:2.5}
+.bn.dim{opacity:.18}.be.dim{opacity:.05}
+.bn.hit rect{stroke:var(--mint);stroke-width:2.5}
+.be{fill:none;stroke:var(--string);stroke-width:1.2;opacity:.55}
+.be.hi{opacity:1;stroke-width:2}
+/* report */
+.md{background:#e9e4d6;color:#1b1b1b;border-radius:3px;padding:26px 30px;font-size:14px;line-height:1.55;box-shadow:5px 6px 0 rgba(0,0,0,.45);max-width:860px}
+.md h1{font-family:var(--type);font-weight:400;font-size:26px;margin:0 0 6px;border-bottom:2px solid #1b1b1b}
+.md h2{font-family:var(--type);font-weight:400;font-size:18px;margin:20px 0 6px}
+.md ul{margin:4px 0 8px;padding-left:20px}.md li{margin:2px 0}
+.md code{font-family:var(--mono);font-size:12px;background:#d8d2bf;padding:0 4px;border-radius:2px}
+.md p{margin:4px 0}
+.md .tag{display:inline-block;font-family:var(--type);border:2px solid #9b1c31;color:#9b1c31;padding:0 8px;transform:rotate(-3deg)}
+.hide-sm{}
+@media (max-width:1100px){.rg{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g32{grid-template-columns:1fr}}
+@media (max-width:760px){.content{padding:16px 14px 40px}.g2,.g3{grid-template-columns:1fr}.hero h1{font-size:28px}.hero .stamp{display:none}.kv{grid-template-columns:100px 1fr}.cards.list .ccard{flex-direction:column}.cards.list .thumb{width:100%;height:104px;border-right:0;border-bottom:1px solid var(--line)}.top .gs span.t{display:none}.crumb{display:none}.bwrap{height:440px}.pol{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{body{background:#fff;overflow:visible}.side,.top,.noprint,.tabs,.toast,.scrim,.drawer,.modal{display:none!important}.app,.main,.content{display:block;overflow:visible;height:auto;padding:0}.md{box-shadow:none;max-width:none;padding:0}}
+
+/* ===================== THEME v2: noir detective, funky ===================== */
+:root{
+  --bg:#0A0910;--bg2:#100E18;--panel:#17141F;--panel2:#221D2E;--line:#2F2942;--line2:#443B5E;
+  --amber:#F2B33D;--blue:#7CC4E8;--text:#F6F0E4;--muted:#A9A2B8;--ok:#5FD7A0;--warn:#F2B33D;--err:#FF6B7F;
+  --string:#FF4D6D;--mint:#2EE6C5;--violet:#B88CFF;--pink:#FF8AC4;
+}
+::selection{background:var(--string);color:#fff}
+body{background-color:var(--bg);background-image:none;position:relative}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+   radial-gradient(ellipse 70% 55% at 12% -8%,rgba(242,179,61,.22),transparent 60%),
+   radial-gradient(ellipse 50% 45% at 100% 100%,rgba(46,230,197,.10),transparent 60%),
+   radial-gradient(ellipse 40% 40% at 90% 0%,rgba(255,77,109,.10),transparent 60%),
+   repeating-linear-gradient(112deg,rgba(255,236,200,.045) 0 22px,transparent 22px 58px);
+  -webkit-mask-image:linear-gradient(135deg,#000 0,rgba(0,0,0,.55) 45%,rgba(0,0,0,.25) 100%);mask-image:linear-gradient(135deg,#000 0,rgba(0,0,0,.55) 45%,rgba(0,0,0,.25) 100%);
+  background-size:auto,auto,auto,120% 120%;animation:blinds 90s linear infinite alternate}
+@keyframes blinds{to{background-position:0 0,0 0,0 0,80px 40px}}
+body::after{content:'';position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.07;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px 160px}
+.app{position:relative;z-index:1}
+.side{background:linear-gradient(180deg,rgba(23,18,32,.97),rgba(12,10,18,.97));border-right:2px solid var(--line2);box-shadow:4px 0 0 rgba(255,77,109,.12)}
+.logo{border-bottom:2px dashed var(--line2)}
+.logo-mark{background:radial-gradient(circle at 35% 30%,#FFD27A,var(--amber) 60%,#C98410);box-shadow:3px 3px 0 var(--string),0 0 22px rgba(242,179,61,.45)}
+.logo-t{text-shadow:2px 2px 0 rgba(255,77,109,.55);letter-spacing:.02em}
+.nav button.on{background:linear-gradient(90deg,rgba(242,179,61,.2),rgba(242,179,61,.03));color:var(--amber);border-left-color:var(--mint);box-shadow:inset 0 0 0 1px rgba(242,179,61,.15)}
+.nav button:hover{background:rgba(124,196,232,.08)}
+.sfoot{border-top:2px dashed var(--line2)}
+.dot{background:var(--mint);box-shadow:0 0 8px var(--mint)}
+.top{background:rgba(14,11,22,.9);border-bottom:0;position:relative;backdrop-filter:blur(4px)}
+.top::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:7px;background:repeating-linear-gradient(-45deg,var(--amber) 0 14px,#120f1a 14px 28px);opacity:.9}
+.content{padding-top:28px}
+.gs{background:rgba(34,29,46,.9);border:1.5px solid var(--line2);box-shadow:3px 3px 0 rgba(0,0,0,.5)}
+.gs:hover{border-color:var(--mint);box-shadow:3px 3px 0 rgba(46,230,197,.35)}
+.avatar{border:2px solid var(--amber);box-shadow:2px 2px 0 var(--string);background:#2a2138}
+.btn{border-width:1.5px;box-shadow:2px 2px 0 rgba(0,0,0,.45);background:var(--panel2)}
+.btn:hover{border-color:var(--mint);color:var(--mint);transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(46,230,197,.3)}
+.btn.pri{background:linear-gradient(180deg,#FFC95A,var(--amber));box-shadow:3px 3px 0 var(--string)}
+.btn.pri:hover{color:#1a1205;box-shadow:5px 5px 0 var(--string)}
+.btn.on{border-color:var(--mint);color:var(--mint);background:rgba(46,230,197,.1)}
+input[type=text],input[type=search],select,textarea{border-width:1.5px;background:rgba(10,9,16,.8)}
+input:focus,select:focus,textarea:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(46,230,197,.15)}
+.panel{background:linear-gradient(180deg,rgba(34,29,46,.55),rgba(23,20,31,.95));border:1.5px solid var(--line);border-top:3px solid var(--amber);box-shadow:5px 5px 0 rgba(0,0,0,.45);position:relative}
+.panel.p0{border-top-width:3px}
+.panel:nth-child(3n+2){border-top-color:var(--string)}
+.panel:nth-child(3n){border-top-color:var(--mint)}
+h2.sh{text-shadow:1px 1px 0 rgba(255,77,109,.35)}
+h2.sh::before{content:'';width:10px;height:10px;background:var(--string);transform:rotate(45deg);flex:none;box-shadow:2px 2px 0 var(--amber)}
+h2.sh::after{border-top:2px dashed var(--line2)}
+.ph h1,.hero h1{text-shadow:3px 3px 0 rgba(255,77,109,.5)}
+.ph h1::after{content:'_';color:var(--amber);animation:blink 1.1s steps(2) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.hero{background:radial-gradient(ellipse at 85% 0%,rgba(242,179,61,.28),transparent 55%),linear-gradient(120deg,#2B1D33,#17141F 70%);border:2px solid var(--line2);box-shadow:6px 6px 0 var(--string)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:10px;background:repeating-linear-gradient(-45deg,var(--amber) 0 16px,#120f1a 16px 32px)}
+.hero::before{background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(242,179,61,.06) 14px 16px)}
+.stamp{border:3px double var(--string);background:rgba(255,77,109,.07);text-shadow:0 0 10px rgba(255,77,109,.4)}
+.stat{border-top-width:3px}
+.stat .n{text-shadow:2px 2px 0 rgba(255,77,109,.45)}
+.stat::after{border-color:rgba(46,230,197,.35)}
+.ccard{background:linear-gradient(180deg,#221D2E,#17141F);border:1.5px solid var(--line2);box-shadow:5px 5px 0 rgba(0,0,0,.5);cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='12' cy='12' r='8' fill='rgba(242,179,61,.15)' stroke='%23F2B33D' stroke-width='2.6'/%3E%3Cpath d='M18 18l9 9' stroke='%23F2B33D' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E"),pointer}
+.ccard:nth-child(3n+1){transform:rotate(-.5deg)}.ccard:nth-child(3n+2){transform:rotate(.4deg)}
+.ccard:hover{transform:translateY(-4px) rotate(0);border-color:var(--mint);box-shadow:7px 7px 0 rgba(46,230,197,.3)}
+.ccard::before{background:rgba(242,179,61,.7);box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.ccard:nth-child(even)::before{background:rgba(255,138,196,.6)}
+.thumb{border-bottom:2px dashed rgba(255,255,255,.2)}
+.ctitle{text-shadow:1px 1px 0 rgba(0,0,0,.5)}
+.chip{border-width:1.5px;box-shadow:1px 1px 0 rgba(0,0,0,.5);background:rgba(10,9,16,.7);cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='12' cy='12' r='8' fill='rgba(242,179,61,.15)' stroke='%23F2B33D' stroke-width='2.6'/%3E%3Cpath d='M18 18l9 9' stroke='%23F2B33D' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E"),pointer}
+.chip:hover{border-color:var(--mint);color:var(--mint)}
+.chip.sel{border-color:var(--amber);color:var(--amber);background:rgba(242,179,61,.14)}
+.bd{border-width:1.5px;background:rgba(10,9,16,.45);text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;font-weight:600}
+.sub{background:rgba(46,230,197,.1);border-color:rgba(46,230,197,.55);color:var(--mint)}
+.li{background:rgba(10,9,16,.55);border-width:1px 1px 1px 4px;cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='12' cy='12' r='8' fill='rgba(242,179,61,.15)' stroke='%23F2B33D' stroke-width='2.6'/%3E%3Cpath d='M18 18l9 9' stroke='%23F2B33D' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E"),pointer}
+.li:hover,.li.sel{border-color:var(--mint);background:rgba(46,230,197,.07)}
+.li.v{border-left-color:var(--ok)}.li.r{border-left-color:var(--amber)}.li.d{border-left-color:var(--blue)}.li.h{border-left-color:var(--pink)}.li.u{border-left-color:var(--string)}
+mark{background:rgba(255,77,109,.35);color:#fff;border-radius:2px;padding:0 2px;box-shadow:0 0 0 1px rgba(255,77,109,.4)}
+.tabs{border-bottom:2px dashed var(--line2)}
+.tabs button.on{color:var(--amber);border-bottom:3px solid var(--string)}
+.seg{border-width:1.5px;box-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.seg button.on{background:rgba(242,179,61,.15);color:var(--amber)}
+.bar{border:1px solid var(--line2);height:9px}.bar>div{background:repeating-linear-gradient(-45deg,var(--amber) 0 10px,var(--string) 10px 20px)}
+.empty{border:3px dashed var(--line2);background:repeating-linear-gradient(-45deg,transparent 0 12px,rgba(255,255,255,.015) 12px 24px)}
+.pol{box-shadow:4px 5px 0 rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.2)}
+.pol::before{content:'';position:absolute;top:-9px;left:50%;width:54px;height:16px;background:rgba(242,179,61,.75);transform:translateX(-50%) rotate(3deg)}
+.pcard{border-width:1.5px;box-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.tl::before{border-left:3px dashed var(--string);opacity:.7}
+.tle{border-width:1.5px;box-shadow:3px 3px 0 rgba(0,0,0,.4);cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='12' cy='12' r='8' fill='rgba(242,179,61,.15)' stroke='%23F2B33D' stroke-width='2.6'/%3E%3Cpath d='M18 18l9 9' stroke='%23F2B33D' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E"),pointer;background:linear-gradient(180deg,#1d1928,#17141F)}
+.tle::before{width:16px;height:16px;left:-30px;top:12px;border:0;background:radial-gradient(circle at 35% 30%,#ff9aae,var(--string) 55%,#a31535);box-shadow:2px 3px 0 rgba(0,0,0,.55)}
+.tle.r::before{background:radial-gradient(circle at 35% 30%,#ffe29a,var(--amber) 55%,#b57a10)}
+.tle.u::before,.tle.gap::before{background:radial-gradient(circle at 35% 30%,#d9c8ff,var(--violet) 55%,#5d3aa8)}
+.tle:hover{border-color:var(--mint)}
+.tle.cf{border-color:var(--string);box-shadow:3px 3px 0 rgba(255,77,109,.35)}
+.tle.gap{border-style:dashed}
+.tt{color:var(--mint);text-shadow:0 0 8px rgba(46,230,197,.35)}
+.flag{color:var(--pink)}
+.drawer{background:linear-gradient(180deg,#201A2C,#14111C);border-left:4px solid var(--amber);box-shadow:-8px 0 0 rgba(255,77,109,.25)}
+.modal{background:#1b1626;border:2px solid var(--line2);box-shadow:7px 7px 0 var(--string)}
+.hit{border-width:1.5px;background:rgba(10,9,16,.6);cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='12' cy='12' r='8' fill='rgba(242,179,61,.15)' stroke='%23F2B33D' stroke-width='2.6'/%3E%3Cpath d='M18 18l9 9' stroke='%23F2B33D' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E"),pointer}.hit:hover{border-color:var(--mint)}
+.toast{box-shadow:4px 4px 0 var(--string)}
+.step{border:2px dashed var(--amber);background:rgba(10,9,16,.7)}
+.term{background:#05040a;border:1.5px solid rgba(46,230,197,.4);box-shadow:inset 0 0 40px rgba(46,230,197,.05),3px 3px 0 rgba(0,0,0,.5);color:#d7fff7;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+.ev.cur{background:rgba(242,179,61,.16);border-left-color:var(--amber)}
+.ev.ok{border-left-color:var(--mint)}.ev.no{border-left-color:var(--string)}.ev.dv{border-left-color:var(--blue)}
+.chain .cn{border-width:1.5px;box-shadow:2px 2px 0 rgba(0,0,0,.45)}.chain .cn:hover{border-color:var(--mint)}
+.bwrap{border:3px solid #5a3b22;border-radius:6px;box-shadow:inset 0 0 60px rgba(0,0,0,.6),5px 5px 0 rgba(0,0,0,.5);background-color:#241810;background-image:radial-gradient(circle at 2px 2px,rgba(255,200,140,.16) 1.5px,transparent 0),radial-gradient(circle at 9px 11px,rgba(0,0,0,.35) 1.5px,transparent 0),radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(0,0,0,.45) 100%);background-size:14px 14px,19px 19px,100% 100%}
+.bn rect{fill:#241f31;stroke:#4b4166}.bn:hover rect{stroke:var(--mint)}.bn.sel rect{stroke:var(--amber);stroke-width:3}.bn.hit rect{stroke:var(--mint);stroke-width:3}
+.be{stroke:var(--string);stroke-width:1.6;opacity:.7}
+.md{background:#efe6cf;background-image:radial-gradient(ellipse at 100% 0,rgba(180,140,70,.22),transparent 45%),repeating-linear-gradient(0deg,transparent 0 27px,rgba(90,70,40,.06) 27px 28px);box-shadow:7px 8px 0 rgba(0,0,0,.55);position:relative}
+.md::after{content:'';position:absolute;right:34px;top:20px;width:64px;height:64px;border-radius:50%;border:5px solid rgba(110,70,30,.14);box-shadow:inset 0 0 0 2px rgba(110,70,30,.08);pointer-events:none}
+.md .tag{border:3px double #b3122d;color:#b3122d}
+.md h1{border-bottom:3px double #1b1b1b}
+::-webkit-scrollbar-thumb{background:#4a3f66;border-radius:6px;border:2px solid transparent;background-clip:padding-box}
+.thumb svg{filter:drop-shadow(2px 3px 0 rgba(0,0,0,.45))}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}.ph h1::after{animation:none}}
+@media (max-width:760px){.ccard:nth-child(n){transform:none}.top::after{height:5px}}
+@media print{body::before,body::after{display:none}.md::after{display:none}}
+</style></head><body><div id="app"></div><script>
+const pad=(n,l=3)=>String(n).padStart(l,'0');
+// Fact tuples: [term, evidenceId, 'v'(verified)|'r'(reported)]
+const CASES=[
+{id:'CASE-001',n:1,title:'The Missing Laboratory Laptop',cat:'Theft',diff:'Medium',status:'Active',icon:'laptop',hue:38,
+ kw:['laptop','lab','key','university','inventory','camera','firmware'],
+ desc:'A research laptop vanishes from a university vision lab during an evening session.',
+ brief:'During an evening research session at the Vision Systems Lab, inventory laptop LT-204 was found missing at 20:45. Four people have a documented relationship to the room that night. The lab camera was offline for a firmware update, so the encoded access conditions carry most of the weight.',
+ obj:'Determine which people satisfied the encoded access conditions, and judge whether the evidence is sufficient to say who removed the laptop.',
+ q:'Who removed laptop LT-204?',
+ loc:'Vision Systems Lab, Block C',when:'12 Mar 2026, 17:00 to 20:45',
+ people:[
+  {id:'amit',name:'Amit Kulkarni',role:'Research Assistant',bg:'Second-year MTech student who assists Dr. Mehta with vision experiments, usually in the evening.',where:'Badge-in 17:40. Exit logged 19:50, though he states he left at 19:15.',access:'Lab key holder (Key Register).',unk:['Whether he admitted Rahul to the lab.','Why his stated departure differs from the logged exit.']},
+  {id:'rahul',name:'Rahul Deshmukh',role:'Final-year Student',bg:'BTech student working on a thesis dataset who uses the lab as a visitor.',where:'Visitor sign-in 18:05. Exit logged 20:10.',access:'No key issued. Admitted as a visitor.',unk:['Which key holder admitted him at the door.','Whether he carried a bag out (no record exists).']},
+  {id:'riya',name:'Riya Bhatt',role:'Laboratory Coordinator',bg:'Maintains the key register and inventory, and ran the evening inventory check.',where:'Present 17:00 to 20:50 per the access log.',access:'Lab key holder and inventory administrator.',unk:['Whether the 19:30 scan was a physical check or only a system entry.']},
+  {id:'drmehta',name:'Dr. Mehta',role:'Faculty Supervisor',bg:'Principal investigator for the lab. Holds a master key.',where:'No lab entry recorded. States he attended a faculty meeting from 18:30.',access:'Lab key holder (master).',unk:['The meeting attendance has not been independently confirmed.']}],
+ ev:[
+  {id:'EV-101',title:'Laboratory Access Log',cat:'Access Log',t:2050,src:'Door controller export',rel:'High',ver:'Verified',who:['amit','rahul','riya'],loc:['Vision Systems Lab'],desc:'Badge and sign-in entries for the lab door. Amit in 17:40 / out 19:50. Rahul in 18:05 (visitor sign-in) / out 20:10. Riya in 17:00 / out 20:50.'},
+  {id:'EV-102',title:'Key Register',cat:'Document',t:2100,src:'Coordinator office ledger',rel:'High',ver:'Verified',who:['amit','riya','drmehta'],loc:['Vision Systems Lab'],desc:'Lists lab keys issued to Amit, Riya and Dr. Mehta. No key was ever issued to Rahul.'},
+  {id:'EV-103',title:'Camera Status Record',cat:'Digital Record',t:2105,src:'Network camera controller',rel:'High',ver:'Verified',who:[],loc:['Lab Corridor'],desc:'The lab corridor camera was offline from 18:20 to 21:00 during a firmware update. No footage exists for that window.'},
+  {id:'EV-104',title:'Inventory Record: LT-204',cat:'Document',t:2045,src:'Inventory system',rel:'Medium',ver:'Verified',who:['riya'],loc:['Vision Systems Lab'],desc:'Laptop LT-204 was last scanned on its shelf at 19:30 and marked missing at 20:45.'},
+  {id:'EV-105',title:'Departure-Time Statements',cat:'Witness Statement',t:2140,src:'Interview notes',rel:'Medium',ver:'Reported',who:['amit','rahul','riya'],loc:['Vision Systems Lab'],desc:'Self-reported departure times: Amit 19:15, Rahul 20:10, Riya 20:50.'},
+  {id:'EV-106',title:'Room-Access Policy',cat:'Document',t:2200,src:'Department handbook',rel:'High',ver:'Verified',who:[],loc:['Vision Systems Lab'],desc:'After 18:00 only key holders may open the lab. Visitors must be signed in by a key holder.'}],
+ st:[
+  {id:'ST-101',who:'amit',text:'I left the lab around quarter past seven. Rahul was still working on his laptop when I went.',t:1915,ctx:'Departure interview, 21:30',ev:['EV-105'],ver:'Reported'},
+  {id:'ST-102',who:'rahul',text:'Amit let me in around six. I finished at ten past eight and went straight home.',t:2010,ctx:'Departure interview, 21:40',ev:['EV-105','EV-101'],ver:'Reported'},
+  {id:'ST-103',who:'riya',text:'I scanned the laptop on its shelf at half past seven. I stayed until ten to nine and found the shelf empty at quarter to nine.',t:2045,ctx:'Incident report, 21:00',ev:['EV-104','EV-105'],ver:'Reported'},
+  {id:'ST-104',who:'drmehta',text:'I was in the faculty meeting from half past six and did not return to the lab that evening.',t:1830,ctx:'Phone statement, next day',ev:[],ver:'Reported'}],
+ tl:[
+  {t:1700,d:'Riya is present in the lab.',who:'riya',loc:'Vision Systems Lab',ev:'EV-101',ver:'Verified'},
+  {t:1740,d:'Amit badges in.',who:'amit',loc:'Vision Systems Lab',ev:'EV-101',ver:'Verified'},
+  {t:1805,d:'Rahul signs in as a visitor.',who:'rahul',loc:'Vision Systems Lab',ev:'EV-101',ver:'Verified'},
+  {t:1820,d:'Lab corridor camera goes offline for a firmware update.',who:'',loc:'Lab Corridor',ev:'EV-103',ver:'Verified'},
+  {t:1830,type:'gap',d:'No camera coverage from 18:20 to 21:00. Entry or removal activity in this window is not visually recorded.',who:'',loc:'Lab Corridor',ev:'EV-103',ver:'Unknown'},
+  {t:1915,d:'Amit states he left the lab.',who:'amit',loc:'Vision Systems Lab',ev:'EV-105',ver:'Reported',conflict:'The access log records Amit\u2019s exit at 19:50, not 19:15.'},
+  {t:1930,d:'LT-204 is scanned on its shelf. This is its last sighting.',who:'riya',loc:'Vision Systems Lab',ev:'EV-104',ver:'Verified'},
+  {t:1950,d:'Amit\u2019s exit is logged by the door controller.',who:'amit',loc:'Vision Systems Lab',ev:'EV-101',ver:'Verified'},
+  {t:2010,d:'Rahul\u2019s exit is logged.',who:'rahul',loc:'Vision Systems Lab',ev:'EV-101',ver:'Verified'},
+  {t:2045,d:'LT-204 is reported missing during the inventory check.',who:'riya',loc:'Vision Systems Lab',ev:'EV-104',ver:'Verified'},
+  {t:2050,d:'Riya\u2019s exit is logged.',who:'riya',loc:'Vision Systems Lab',ev:'EV-101',ver:'Verified'}],
+ facts:[
+  ['has_key(amit, lab)','EV-102','v'],['has_key(riya, lab)','EV-102','v'],['has_key(drmehta, lab)','EV-102','v'],
+  ['present(amit, lab)','EV-101','v'],['present(rahul, lab)','EV-101','v'],['present(riya, lab)','EV-101','v'],
+  ['camera_offline(lab)','EV-103','v'],['laptop_last_seen(1930)','EV-104','v'],
+  ['logged_exit(amit, 1950)','EV-101','v'],['logged_exit(rahul, 2010)','EV-101','v'],['logged_exit(riya, 2050)','EV-101','v'],
+  ['departed(amit, 1915)','EV-105','r'],['departed(rahul, 2010)','EV-105','r'],['departed(riya, 2050)','EV-105','r']],
+ rules:[
+  {id:'R1',name:'Laboratory Access Rule',if:['has_key(X, lab)','present(X, lab)'],then:'can_access(X, lab)',why:'A key holder who is recorded present satisfies the access condition.',est:'{X} satisfies the encoded conditions for laboratory access.',not:'It does not prove that {X} entered at a particular time or removed the laptop.'},
+  {id:'R2',name:'Entry Possibility Rule',if:['can_access(X, lab)','present(X, lab)'],then:'could_enter(X, lab)',why:'Someone with access who was present could have entered the room.',est:'{X} could have entered the lab.',not:'Being able to enter is not the same as entering.'},
+  {id:'R3',name:'Unobserved Presence Rule',if:['present(X, lab)','camera_offline(lab)'],then:'unrecorded_activity(X, lab)',why:'Presence during a camera outage means activity was not filmed.',est:'{X} was present while no camera footage exists.',not:'Missing footage is not evidence of wrongdoing.'},
+  {id:'R4',name:'After Last Sighting Rule',if:['present(X, lab)','logged_exit(X, T)','laptop_last_seen(S)','lt(S, T)'],then:'present_after_last_seen(X)',why:'Compares the logged exit time with the laptop\u2019s last sighting using a numeric check.',est:'{X} was still in the lab after the laptop was last seen ({S} < {T}).',not:'It does not show what {X} did during that time.'},
+  {id:'R5',name:'Opportunity Rule',if:['could_enter(X, lab)','present_after_last_seen(X)'],then:'opportunity(X, lab)',why:'Keyed access plus presence after the last sighting.',est:'{X} had keyed access and was present after the laptop was last seen.',not:'Opportunity is not motive, intent or action. It does not identify who removed the laptop.'},
+  {id:'R6',name:'Departure Conflict Rule',if:['departed(X, T1)','logged_exit(X, T2)','neq(T1, T2)'],then:'conflicting_departure(X)',why:'Flags a difference between the stated and the logged departure time.',est:'{X}\u2019s stated departure ({T1}) differs from the logged exit ({T2}).',not:'A mismatch can come from an honest memory error. It does not show concealment.'}],
+ open:['How did Rahul enter the lab without a key, and which key holder admitted him?','Was the laptop removed after 19:30, or only noticed missing at 20:45?','Is the camera outage related to the incident?'],
+ hyp:[{who:'amit',text:'The gap between Amit\u2019s stated 19:15 and logged 19:50 departure may be a memory error. Untested.'},{who:'rahul',text:'Rahul may have been admitted by a key holder as he says. The visitor sign-in does not record who admitted him.'}],
+ unknown:['The identity of whoever removed the laptop.','What happened between 19:30 and 20:45.'],
+ limits:['The rules encode access and presence. Nothing in the evidence records removal of the laptop.','Statements are reported claims, not verified facts.','Opportunity facts are equally consistent with innocent explanations.'],
+ conflictPreds:['conflicting_departure'],keyPreds:['opportunity']},
+
+{id:'CASE-002',n:2,title:'The Locked Archive Room',cat:'Tampering',diff:'Hard',status:'Under Review',icon:'key',hue:205,
+ kw:['archive','envelope','permission','badge','sealed','zone'],
+ desc:'A sealed research envelope disappears overnight from a restricted university archive.',
+ brief:'Sealed envelope ENV-77 was locked in cabinet 4 of the Archive Room at 20:55. At 08:00 the next morning it was gone. Entry to the room is controlled by group permissions, and a corridor camera captured people at the archive door.',
+ obj:'Work out who held permission for the archive, whose recorded presence conflicts with permissions, and which statements are contradicted by records.',
+ q:'Who removed envelope ENV-77?',
+ loc:'Archive Room, East Wing, Central Library',when:'18 Mar 2026, 20:50 to 08:00 next day',
+ people:[
+  {id:'nisha',name:'Nisha Verma',role:'Senior Archivist',bg:'Six years in the archive team. Manages the sealed-envelope ledger.',where:'Badge-in 20:50. States she left at 21:20.',access:'Archive Room (archive staff group).',unk:['Her exit time. The door has no exit scanner.']},
+  {id:'karan',name:'Karan Joshi',role:'Postdoctoral Researcher',bg:'Works on a manuscript project. Permitted in the Reading Hall only.',where:'Seen at the archive door at 21:12. States he never went near it.',access:'Reading Hall only (research group).',unk:['Whether he entered the room or only stood at the door.','Why he was at the archive door.']},
+  {id:'farhan',name:'Farhan Sheikh',role:'Night Custodian',bg:'Patrols the east wing corridor every hour.',where:'Corridor badge at 21:00.',access:'Corridor only (custodial group).',unk:['Whether the archive door was visibly closed during later patrols.']}],
+ ev:[
+  {id:'EV-201',title:'Permission Register',cat:'Document',t:2200,src:'Library security office',rel:'High',ver:'Verified',who:['nisha','karan','farhan'],loc:['Archive Room','Reading Hall'],desc:'Group memberships and room permissions. Archive staff may enter the Archive Room. Research group members may enter the Reading Hall. Karan has no Archive Room permission.'},
+  {id:'EV-202',title:'Entry Badge Log',cat:'Access Log',t:2210,src:'Door controller export',rel:'High',ver:'Verified',who:['nisha','farhan'],loc:['Archive Room','East Wing Corridor'],desc:'Nisha badged into the Archive Room at 20:50. Farhan badged in the corridor at 21:00. There are no exit scans: the archive door opens outward by push-bar.'},
+  {id:'EV-203',title:'Corridor Camera Observation',cat:'Camera Observation',t:2230,src:'Corridor camera review',rel:'Medium',ver:'Verified',who:['karan','nisha'],loc:['East Wing Corridor','Archive Room'],desc:'Nisha is seen at the archive door at about 20:50. Karan is seen at the archive door at 21:12. The camera does not cover the room interior.'},
+  {id:'EV-204',title:'Envelope Seal Ledger',cat:'Document',t:3200,src:'Archive ledger',rel:'High',ver:'Verified',who:['nisha'],loc:['Archive Room'],desc:'ENV-77 sealed and placed in cabinet 4 at 20:55. Found missing at 08:00 the next day.'},
+  {id:'EV-205',title:'Interview Statements',cat:'Witness Statement',t:3300,src:'Interview notes',rel:'Medium',ver:'Reported',who:['nisha','karan','farhan'],loc:['Archive Room'],desc:'Statements by Nisha, Karan and Farhan about where they were. Karan states he was never near the archive.'},
+  {id:'EV-206',title:'Building Zone Map',cat:'Document',t:2000,src:'Facilities plan',rel:'High',ver:'Verified',who:[],loc:['Archive Room','East Wing','Central Library'],desc:'The Archive Room lies inside the East Wing, which lies inside the Central Library.'}],
+ st:[
+  {id:'ST-201',who:'karan',text:'I never went near the archive that night. I was in the reading hall until I left the building.',t:2112,ctx:'Interview, next day',ev:['EV-205','EV-203'],ver:'Reported'},
+  {id:'ST-202',who:'nisha',text:'I sealed the envelope and locked it in cabinet four at five to nine. I left around twenty past nine.',t:2120,ctx:'Interview, next day',ev:['EV-204','EV-205'],ver:'Reported'},
+  {id:'ST-203',who:'farhan',text:'I walked the east corridor at nine. The archive door looked closed. I did not see anyone.',t:2100,ctx:'Interview, next day',ev:['EV-202','EV-205'],ver:'Reported'}],
+ tl:[
+  {t:2050,d:'Nisha badges into the Archive Room.',who:'nisha',loc:'Archive Room',ev:'EV-202',ver:'Verified'},
+  {t:2055,d:'Envelope ENV-77 is sealed and placed in cabinet 4.',who:'nisha',loc:'Archive Room',ev:'EV-204',ver:'Verified'},
+  {t:2100,d:'Farhan badges in the corridor.',who:'farhan',loc:'East Wing Corridor',ev:'EV-202',ver:'Verified'},
+  {t:2112,d:'Karan is seen at the archive door by the corridor camera.',who:'karan',loc:'East Wing Corridor',ev:'EV-203',ver:'Verified',conflict:'Karan\u2019s statement says he never went near the archive.'},
+  {t:2120,d:'Nisha states she left the room.',who:'nisha',loc:'Archive Room',ev:'EV-205',ver:'Reported'},
+  {t:2130,type:'gap',d:'No interior camera and no exit scanner. Who was inside the Archive Room after 21:12 is unknown.',who:'',loc:'Archive Room',ev:'EV-202',ver:'Unknown'},
+  {t:3200,d:'Envelope ENV-77 is found missing.',who:'',loc:'Archive Room',ev:'EV-204',ver:'Verified'}],
+ facts:[
+  ['member_of(nisha, archive_staff)','EV-201','v'],['member_of(karan, research_group)','EV-201','v'],['member_of(farhan, custodial)','EV-201','v'],
+  ['permits(archive_staff, archive_room)','EV-201','v'],['permits(research_group, reading_hall)','EV-201','v'],['permits(custodial, corridor)','EV-201','v'],
+  ['badge_in(nisha, archive_room, 2050)','EV-202','v'],['badge_in(farhan, corridor, 2100)','EV-202','v'],
+  ['seen_at(karan, archive_room)','EV-203','v'],['seen_at(nisha, archive_room)','EV-203','v'],
+  ['no_permission(karan, archive_room)','EV-201','v'],['claims_absent(karan, archive_room)','EV-205','r'],
+  ['inside(archive_room, east_wing)','EV-206','v'],['inside(east_wing, library)','EV-206','v']],
+ rules:[
+  {id:'R1',name:'Permission Inheritance Rule',if:['member_of(P, G)','permits(G, R)'],then:'holds_permission(P, R)',why:'A member of a group inherits the group\u2019s room permissions.',est:'{P} holds permission for {R} through group {G}.',not:'Permission is not presence. It does not show the room was entered.'},
+  {id:'R2',name:'Authorized Entry Rule',if:['holds_permission(P, R)','badge_in(P, R, T)'],then:'authorized_entry(P, R)',why:'Permission plus a badge-in record shows a permitted entry.',est:'{P} entered {R} with permission at {T}.',not:'A permitted entry says nothing about what the person did inside.'},
+  {id:'R3',name:'Permission Conflict Rule',if:['seen_at(P, R)','no_permission(P, R)'],then:'permission_conflict(P, R)',why:'Someone observed at a room they have no permission for.',est:'{P} was observed at {R} without a recorded permission.',not:'Standing at a door is not entering. It does not show {P} took anything.'},
+  {id:'R4',name:'Zone Containment Rule',if:['inside(X, Y)','inside(Y, Z)'],then:'inside(X, Z)',why:'Containment is transitive: if X is in Y and Y is in Z, X is in Z.',est:'{X} lies inside {Z}.',not:'This is a structural fact about the building only.'},
+  {id:'R5',name:'Contradicted Claim Rule',if:['claims_absent(P, R)','seen_at(P, R)'],then:'contradicted_claim(P, R)',why:'A claim of absence is contradicted by a camera observation.',est:'{P}\u2019s claim of being away from {R} is contradicted by a camera observation.',not:'It does not explain why {P} was there or establish wrongdoing.'},
+  {id:'R6',name:'Zone Presence Rule',if:['seen_at(P, R)','inside(R, Z)'],then:'near_zone(P, Z)',why:'Chains an observation with the containment hierarchy, including derived containment.',est:'{P} was observed within {Z}.',not:'Zone-level presence is weaker than room-level presence.'}],
+ open:['Who was inside the Archive Room after 21:12?','Did Karan enter the room or only stand at the door?','Did Nisha secure the cabinet when she left?'],
+ hyp:[{who:'karan',text:'Karan may have misremembered passing the archive corridor. Untested.'},{who:'nisha',text:'The envelope may have been removed after Nisha left, or may have been removed by someone with a key to cabinet 4. No evidence either way.'}],
+ unknown:['The identity of whoever removed ENV-77.','Whether cabinet 4 was locked after 20:55.'],
+ limits:['No evidence covers the room interior or any exit.','A camera sighting at a door is weaker than a room entry.','Permission rules describe the register, not what people actually did.'],
+ conflictPreds:['permission_conflict','contradicted_claim'],keyPreds:['permission_conflict','contradicted_claim']},
+
+{id:'CASE-003',n:3,title:'The Disappearing Project File',cat:'Digital',diff:'Medium',status:'Active',icon:'file',hue:160,
+ kw:['file','workstation','login','session','backup','shared','delete'],
+ desc:'A project document vanishes from a shared computer lab after a login session on the wrong workstation.',
+ brief:'The group document PROJECTFILE was open on workstation WS-3 at 16:50 and was found missing at 18:00. File logs show a delete operation on WS-5, which is assigned to a different student than the one logged in.',
+ obj:'Decide how far the logs attribute the deletion to a person, and whether the file is recoverable from the nightly backup.',
+ q:'Who deleted PROJECTFILE?',
+ loc:'Shared Computer Lab 2',when:'24 Mar 2026, 16:40 to 18:00',
+ people:[
+  {id:'sana',name:'Sana Iyer',role:'Final-year Student',bg:'Project group lead who last edited the file.',where:'Logged in on WS-3 from 16:40.',access:'Assigned workstation WS-3.',unk:['Whether she saved a local copy.']},
+  {id:'dev',name:'Dev Malhotra',role:'Student',bg:'Project group member.',where:'States he was in a lecture hall at 17:00.',access:'Assigned workstation WS-5.',unk:['Whether he shared his credentials.','Whether anyone confirms the lecture-hall claim.']},
+  {id:'jay',name:'Jay Pillai',role:'Lab Assistant',bg:'Maintains lab machines and has an administrator login.',where:'Session open on WS-5 from 16:55.',access:'Administrator account. Assigned workstation WS-7.',unk:['Why he was on WS-5 and not WS-7.']}],
+ ev:[
+  {id:'EV-301',title:'Document Access Log',cat:'Access Log',t:1810,src:'File server audit',rel:'High',ver:'Verified',who:['sana','jay'],loc:['Shared Computer Lab 2'],desc:'Open and delete operations on PROJECTFILE with workstation and time.'},
+  {id:'EV-302',title:'Workstation Assignment Sheet',cat:'Document',t:1815,src:'Lab administrator',rel:'High',ver:'Verified',who:['sana','dev','jay'],loc:['Shared Computer Lab 2'],desc:'WS-3 is assigned to Sana, WS-5 to Dev and WS-7 to Jay.'},
+  {id:'EV-303',title:'Login Session Record',cat:'Digital Record',t:1820,src:'Directory service',rel:'High',ver:'Verified',who:['sana','jay'],loc:['Shared Computer Lab 2'],desc:'Session on WS-3 belongs to Sana. Session on WS-5 belongs to Jay.'},
+  {id:'EV-304',title:'Backup Job Report',cat:'Digital Record',t:1830,src:'Backup scheduler',rel:'Medium',ver:'Unverified',who:[],loc:['Shared Computer Lab 2'],desc:'The nightly sync job for the project folder is scheduled. The completion and integrity field is blank in the export.'},
+  {id:'EV-305',title:'Witness Statements',cat:'Witness Statement',t:1900,src:'Interview notes',rel:'Medium',ver:'Reported',who:['sana','dev','jay'],loc:['Shared Computer Lab 2'],desc:'Statements by Sana, Dev and Jay. Dev says he was in a lecture hall at 17:00.'},
+  {id:'EV-306',title:'File Operation Report',cat:'Digital Record',t:1812,src:'File server audit',rel:'High',ver:'Verified',who:['sana','jay'],loc:['Shared Computer Lab 2'],desc:'PROJECTFILE opened on WS-3 at 16:50. PROJECTFILE deleted on WS-5 at 17:05.'}],
+ st:[
+  {id:'ST-301',who:'sana',text:'I was on my own machine all afternoon. The file was there when I stepped away at five.',t:1700,ctx:'Interview, 19:00',ev:['EV-305','EV-306'],ver:'Reported'},
+  {id:'ST-302',who:'dev',text:'I was in the lecture hall at five. I never touched WS-5 that afternoon.',t:1700,ctx:'Interview, 19:10',ev:['EV-305'],ver:'Reported'},
+  {id:'ST-303',who:'jay',text:'I used WS-5 because my own machine was frozen. I was running a disk check and did not delete anything.',t:1705,ctx:'Interview, 19:20',ev:['EV-303','EV-305'],ver:'Reported'}],
+ tl:[
+  {t:1640,d:'Sana logs in on WS-3.',who:'sana',loc:'Shared Computer Lab 2',ev:'EV-303',ver:'Verified'},
+  {t:1650,d:'PROJECTFILE is opened on WS-3.',who:'sana',loc:'Shared Computer Lab 2',ev:'EV-306',ver:'Verified'},
+  {t:1655,d:'A session for Jay starts on WS-5, which is assigned to Dev.',who:'jay',loc:'Shared Computer Lab 2',ev:'EV-303',ver:'Verified',conflict:'WS-5 is assigned to Dev, but the session belongs to Jay.'},
+  {t:1700,d:'Dev states he was in a lecture hall.',who:'dev',loc:'Lecture Hall',ev:'EV-305',ver:'Reported'},
+  {t:1705,d:'PROJECTFILE is deleted on WS-5.',who:'jay',loc:'Shared Computer Lab 2',ev:'EV-306',ver:'Verified'},
+  {t:1730,type:'gap',d:'Backup integrity status is blank. Whether the nightly sync captured the file is unknown.',who:'',loc:'Shared Computer Lab 2',ev:'EV-304',ver:'Unknown'},
+  {t:1800,d:'Sana finds PROJECTFILE missing.',who:'sana',loc:'Shared Computer Lab 2',ev:'EV-301',ver:'Verified'}],
+ facts:[
+  ['assigned(ws3, sana)','EV-302','v'],['assigned(ws5, dev)','EV-302','v'],['assigned(ws7, jay)','EV-302','v'],
+  ['session(ws3, sana)','EV-303','v'],['session(ws5, jay)','EV-303','v'],
+  ['file_op(open, projectfile, ws3, 1650)','EV-306','v'],['file_op(delete, projectfile, ws5, 1705)','EV-306','v'],
+  ['backup(projectfile, nightly_sync)','EV-304','v'],['reported_elsewhere(dev, lecture_hall)','EV-305','r']],
+ rules:[
+  {id:'R1',name:'Session Operation Rule',if:['file_op(Op, F, W, T)','session(W, P)'],then:'session_op(P, Op, F, W)',why:'Links a file operation on a workstation to the session open on that workstation.',est:'The {Op} on {F} at {W} occurred during {P}\u2019s session.',not:'A session is not proof of who was at the keyboard.'},
+  {id:'R2',name:'Shared Login Rule',if:['assigned(W, A)','session(W, P)','neq(A, P)'],then:'shared_login(W)',why:'The session owner differs from the assigned user, using the neq check.',est:'The session on {W} belongs to {P}, not its assigned user {A}.',not:'It does not show whether this was permitted or arranged.'},
+  {id:'R3',name:'Attribution Uncertainty Rule',if:['session_op(P, delete, F, W)','shared_login(W)'],then:'attribution_uncertain(P, W)',why:'A delete tied to a session on a shared-login workstation cannot be firmly attributed.',est:'The deletion on {W} is tied to {P}\u2019s session, but attribution is uncertain.',not:'It neither clears nor implicates {P}.'},
+  {id:'R4',name:'Recoverability Rule',if:['backup(F, B)','intact(B)'],then:'recoverable(F)',why:'A file is recoverable only if an intact backup exists.',est:'{F} is recoverable from {B}.',not:'Requires a verified intact backup.'},
+  {id:'R5',name:'Needs Clarification Rule',if:['reported_elsewhere(P, L)','assigned(W, P)','shared_login(W)'],then:'needs_clarification(P)',why:'Someone claims to be elsewhere while their workstation had a shared login.',est:'{P}\u2019s account of being at {L} should be checked against the shared login on {W}.',not:'It does not suggest {P} is responsible.'}],
+ open:['Is the project file recoverable? The backup integrity status is blank.','Who was physically at WS-5 at 17:05?','Was the credential or workstation sharing arranged?'],
+ hyp:[{who:'jay',text:'Jay may have run a clean-up task that deleted the file by mistake. Untested.'},{who:'dev',text:'Someone may have used Dev\u2019s workstation without Dev. Untested.'}],
+ unknown:['Who was at the keyboard of WS-5.','Whether the backup contains the file.'],
+ limits:['Logs identify sessions, not people.','No intact backup fact exists, so recoverability is not derived.','Statements are reported claims.'],
+ conflictPreds:['shared_login','attribution_uncertain','needs_clarification'],keyPreds:['attribution_uncertain']},
+
+{id:'CASE-004',n:4,title:'The Midnight Power Failure',cat:'Facility',diff:'Hard',status:'Unresolved',icon:'bolt',hue:18,
+ kw:['power','breaker','overload','maintenance','centrifuge','heater','ups'],
+ desc:'A research room loses power at 00:12 with expensive samples inside.',
+ brief:'Breaker B2 tripped at 00:12, cutting power to Room R4. A centrifuge and a heater were running, and the quarterly inspection of B2 was overdue. The records list candidate causes, but none confirms one.',
+ obj:'List the candidate causes the facts support, and mark which links depend on verified records and which depend on reported claims.',
+ q:'What caused the power failure?',
+ loc:'Room R4, Research Block 2',when:'30 Mar 2026, 23:40 to 00:47',
+ people:[
+  {id:'vikram',name:'Vikram Rao',role:'Maintenance Technician',bg:'Responsible for breaker inspections in Research Block 2.',where:'Not recorded in R4.',access:'Electrical panel keys.',unk:['Why the inspection was postponed.']},
+  {id:'anika',name:'Anika Desai',role:'PhD Researcher',bg:'Runs a sample-preparation protocol in R4.',where:'Present in R4 from 23:40 to 00:20.',access:'R4 badge access.',unk:['Whether the heater setting was within protocol.']},
+  {id:'salim',name:'Salim Khan',role:'Night Security Officer',bg:'Patrols Research Block 2 overnight.',where:'Reports hearing a thud at about 00:12.',access:'Building patrol access.',unk:['Where exactly he was at 00:12.']}],
+ ev:[
+  {id:'EV-401',title:'Maintenance Record',cat:'Document',t:3000,src:'Facilities system',rel:'High',ver:'Verified',who:['vikram'],loc:['Electrical Room'],desc:'The quarterly inspection of breaker B2 was due 14 days earlier and is marked postponed (parts delay).'},
+  {id:'EV-402',title:'Equipment Status Snapshot',cat:'Environmental',t:2350,src:'Room equipment logger',rel:'High',ver:'Verified',who:['anika'],loc:['Room R4'],desc:'Centrifuge and heater are logged running in Room R4. Both are flagged high-draw equipment. The heater started at 23:50.'},
+  {id:'EV-403',title:'Breaker Panel Record',cat:'Digital Record',t:2415,src:'Smart panel log',rel:'High',ver:'Verified',who:[],loc:['Electrical Room','Room R4'],desc:'Breaker B2 recorded as tripped at 00:12. B2 supplies Room R4.'},
+  {id:'EV-404',title:'Room Entry Log',cat:'Access Log',t:2430,src:'Door controller export',rel:'High',ver:'Verified',who:['anika'],loc:['Room R4'],desc:'Anika badged into R4 at 23:40 and out at 00:20.'},
+  {id:'EV-405',title:'UPS Event Timestamps',cat:'Timeline Record',t:2450,src:'UPS controller',rel:'High',ver:'Verified',who:[],loc:['Room R4'],desc:'Mains loss logged at 00:12. Mains restored at 00:47.'},
+  {id:'EV-406',title:'Interview Statements',cat:'Witness Statement',t:3010,src:'Interview notes',rel:'Medium',ver:'Reported',who:['anika','vikram','salim'],loc:['Room R4'],desc:'Anika says she started the heater. Vikram says the inspection was delayed by a parts shortage. Salim says he heard a thud at about 00:12.'}],
+ st:[
+  {id:'ST-401',who:'anika',text:'I started the heater at ten to midnight for my protocol. The centrifuge was already running.',t:2350,ctx:'Interview, next day',ev:['EV-406','EV-402'],ver:'Reported'},
+  {id:'ST-402',who:'vikram',text:'The B2 inspection slipped because we were waiting on a replacement part. It was logged as postponed.',t:3000,ctx:'Interview, next day',ev:['EV-401','EV-406'],ver:'Reported'},
+  {id:'ST-403',who:'salim',text:'I heard a thud around twelve past midnight and then everything went dark on the east side.',t:2412,ctx:'Interview, next day',ev:['EV-405','EV-406'],ver:'Reported'}],
+ tl:[
+  {t:2340,d:'Anika badges into Room R4.',who:'anika',loc:'Room R4',ev:'EV-404',ver:'Verified'},
+  {t:2350,d:'Heater starts in R4. Centrifuge already running.',who:'anika',loc:'Room R4',ev:'EV-402',ver:'Verified'},
+  {t:2412,d:'Breaker B2 trips. Mains loss logged by the UPS.',who:'',loc:'Electrical Room',ev:'EV-403',ver:'Verified'},
+  {t:2412,d:'Salim reports hearing a thud.',who:'salim',loc:'Research Block 2',ev:'EV-406',ver:'Reported'},
+  {t:2420,d:'Anika badges out of R4.',who:'anika',loc:'Room R4',ev:'EV-404',ver:'Verified'},
+  {t:2430,type:'gap',d:'No record shows whether B2 was physically inspected or reset after the trip.',who:'vikram',loc:'Electrical Room',ev:'EV-401',ver:'Unknown'},
+  {t:2447,d:'Mains power is restored.',who:'',loc:'Room R4',ev:'EV-405',ver:'Verified'}],
+ facts:[
+  ['running(centrifuge, room_r4)','EV-402','v'],['running(heater, room_r4)','EV-402','v'],
+  ['high_draw(centrifuge)','EV-402','v'],['high_draw(heater)','EV-402','v'],['started(heater, 2350)','EV-402','v'],
+  ['tripped(breaker_b2, 2412)','EV-403','v'],['powers(breaker_b2, room_r4)','EV-403','v'],
+  ['inspection_overdue(breaker_b2)','EV-401','v'],['present(anika, room_r4)','EV-404','v'],['started_by(heater, anika)','EV-406','r']],
+ rules:[
+  {id:'R1',name:'Overload Risk Rule',if:['running(E, R)','high_draw(E)'],then:'overload_risk(R)',why:'A room running high-draw equipment is at risk of overload. Several equipment items give the same conclusion, so duplicates are prevented.',est:'{R} was running high-draw equipment ({E}).',not:'Risk is not a measurement of actual load.'},
+  {id:'R2',name:'Overload Cause Rule',if:['tripped(B, T)','powers(B, R)','overload_risk(R)'],then:'candidate_cause(overload, B)',why:'A tripped breaker feeding a room at risk of overload makes overload a candidate cause.',est:'Overload on {B} is a candidate cause of the trip at {T}.',not:'A candidate cause is not a confirmed cause. No load measurement exists.'},
+  {id:'R3',name:'Inspection Cause Rule',if:['tripped(B, T)','inspection_overdue(B)'],then:'candidate_cause(overdue_inspection, B)',why:'An overdue inspection on a tripped breaker makes maintenance a candidate cause.',est:'The overdue inspection of {B} is a candidate cause.',not:'It does not show the breaker was faulty.'},
+  {id:'R4',name:'Started Before Trip Rule',if:['started(E, T1)','tripped(B, T2)','powers(B, R)','running(E, R)','lt(T1, T2)'],then:'started_before_trip(E)',why:'Compares start time and trip time with a numeric check.',est:'{E} started ({T1}) before the trip ({T2}).',not:'Ordering in time is not causation.'},
+  {id:'R5',name:'Operator Link Rule',if:['started_by(E, P)','started_before_trip(E)'],then:'operator_linked(P, E)',why:'Links a person to equipment that started before the trip. This depends on a reported claim.',est:'{P} is linked to starting {E} before the trip.',not:'It does not show the start caused the trip. It rests on a reported statement.'},
+  {id:'R6',name:'Presence Near Trip Rule',if:['present(P, R)','powers(B, R)','tripped(B, T)'],then:'present_near_trip(P, B)',why:'Someone was in the room supplied by the tripped breaker.',est:'{P} was in the room supplied by {B}.',not:'Being in the room is not a cause of the trip.'}],
+ open:['Was the breaker faulty, or simply overloaded?','Why was the B2 inspection postponed for 14 days?','Was B2 inspected or reset after the trip?'],
+ hyp:[{who:'vikram',text:'The overdue inspection may have allowed a worn breaker to trip under normal load. Untested.'},{who:'anika',text:'The combined centrifuge and heater load may have exceeded the circuit rating. No load reading exists.'}],
+ unknown:['The actual electrical load on B2 at 00:12.','The condition of breaker B2.'],
+ limits:['No electrical load measurement exists.','Candidate causes are not ranked and are not probabilities.','One link depends on Anika\u2019s reported statement.'],
+ conflictPreds:[],keyPreds:['candidate_cause']},
+
+{id:'CASE-005',n:5,title:'The Museum Exhibit Mystery',cat:'Exhibit',diff:'Easy',status:'Under Review',icon:'vase',hue:290,
+ kw:['museum','replica','exhibit','trolley','hall','store','transport'],
+ desc:'A replica exhibit turns up in the wrong display hall after a museum evening event.',
+ brief:'Replica RX-9 is catalogued for Hall A but was photographed in Hall C at 21:05. Hall A and Hall C are linked only through the Store. A trolley movement was logged in the Store at 18:40, and one volunteer without Store access says he moved a trolley.',
+ obj:'Find whether a physical route links Hall A to Hall C, which people could have handled the replica, and which claims need explanation.',
+ q:'Who moved replica RX-9?',
+ loc:'City Heritage Museum',when:'6 Apr 2026, 17:20 to 21:05',
+ people:[
+  {id:'leena',name:'Leena Menon',role:'Curator',bg:'Catalogued the replica for Hall A earlier that day.',where:'States she left at 18:00.',access:'Store access.',unk:['Whether she was on site after 18:00.']},
+  {id:'omar',name:'Omar Qureshi',role:'Logistics Coordinator',bg:'Runs transport trolleys and event setup.',where:'Store badge entry at 18:35.',access:'Store access. On shift.',unk:['What he moved from the Store.']},
+  {id:'ishaan',name:'Ishaan Nair',role:'Event Volunteer',bg:'Volunteer for the evening event.',where:'Signed in 17:30. States he pushed trolley T2 at about 18:40.',access:'No Store access. On shift.',unk:['Who instructed him to move the trolley.','What was on the trolley.']}],
+ ev:[
+  {id:'EV-501',title:'Catalog Record',cat:'Document',t:1700,src:'Collections database',rel:'High',ver:'Verified',who:['leena'],loc:['Hall A'],desc:'Replica RX-9 is catalogued as displayed in Hall A.'},
+  {id:'EV-502',title:'Transport Log',cat:'Timeline Record',t:1900,src:'Logistics log',rel:'Medium',ver:'Verified',who:['omar'],loc:['Store'],desc:'Trolley T2 is logged in the Store at 18:40. The log does not record which item it carried.'},
+  {id:'EV-503',title:'Room Access Record',cat:'Access Log',t:1910,src:'Door controller export',rel:'High',ver:'Verified',who:['omar','leena'],loc:['Store'],desc:'Store badge entries for Leena (17:20) and Omar (18:35).'},
+  {id:'EV-504',title:'Floor-Plan Route Document',cat:'Document',t:1000,src:'Facilities plan',rel:'High',ver:'Verified',who:[],loc:['Hall A','Store','Hall C'],desc:'Hall A connects to the Store. The Store connects to Hall C. No direct door links Hall A and Hall C.'},
+  {id:'EV-505',title:'Staff and Volunteer Roster',cat:'Document',t:1730,src:'Event office',rel:'High',ver:'Verified',who:['omar','ishaan','leena'],loc:['City Heritage Museum'],desc:'Omar and Ishaan are on shift for the evening event. Leena\u2019s shift ended at 18:00. Volunteers are not granted Store access.'},
+  {id:'EV-506',title:'Hall C Photo and Statements',cat:'Camera Observation',t:2105,src:'Staff photo and interviews',rel:'Medium',ver:'Verified',who:['ishaan','omar','leena'],loc:['Hall C'],desc:'A staff photo shows RX-9 in Hall C at 21:05. Ishaan says he pushed trolley T2 from the Store toward Hall C without checking what was on it.'}],
+ st:[
+  {id:'ST-501',who:'ishaan',text:'I pushed a trolley from the store towards hall C at about twenty to seven because I was told to. I did not check what was on it.',t:1840,ctx:'Interview, 21:30',ev:['EV-506','EV-502'],ver:'Reported'},
+  {id:'ST-502',who:'omar',text:'I went into the store at twenty-five to seven to collect cleaning supplies and went straight back to the loading bay.',t:1835,ctx:'Interview, 21:35',ev:['EV-503'],ver:'Reported'},
+  {id:'ST-503',who:'leena',text:'I catalogued the replica for hall A that morning and left the museum at six.',t:1800,ctx:'Interview, 21:40',ev:['EV-501','EV-505'],ver:'Reported'}],
+ tl:[
+  {t:1720,d:'Leena badges into the Store.',who:'leena',loc:'Store',ev:'EV-503',ver:'Verified'},
+  {t:1730,d:'Ishaan signs in as a volunteer.',who:'ishaan',loc:'City Heritage Museum',ev:'EV-505',ver:'Verified'},
+  {t:1800,d:'Leena\u2019s shift ends. She states she left the museum.',who:'leena',loc:'City Heritage Museum',ev:'EV-505',ver:'Reported'},
+  {t:1835,d:'Omar badges into the Store.',who:'omar',loc:'Store',ev:'EV-503',ver:'Verified'},
+  {t:1840,d:'Trolley T2 is logged in the Store.',who:'omar',loc:'Store',ev:'EV-502',ver:'Verified'},
+  {t:1840,d:'Ishaan states he pushed a trolley toward Hall C.',who:'ishaan',loc:'Store',ev:'EV-506',ver:'Reported',conflict:'Ishaan has no Store access per the roster, yet states he moved a trolley from the Store.'},
+  {t:1900,type:'gap',d:'No record states what the trolley carried or who gave the instruction.',who:'',loc:'Store',ev:'EV-502',ver:'Unknown'},
+  {t:2105,d:'RX-9 is photographed in Hall C.',who:'',loc:'Hall C',ev:'EV-506',ver:'Verified'}],
+ facts:[
+  ['listed_in(replica, hall_a)','EV-501','v'],['found_in(replica, hall_c)','EV-506','v'],
+  ['route(hall_a, store)','EV-504','v'],['route(store, hall_c)','EV-504','v'],
+  ['cleared(omar, store)','EV-503','v'],['cleared(leena, store)','EV-503','v'],
+  ['on_shift(omar)','EV-505','v'],['on_shift(ishaan)','EV-505','v'],['not_cleared(ishaan, store)','EV-505','v'],
+  ['transport_entry(trolley2, store, 1840)','EV-502','v'],['handled_by(ishaan, trolley2)','EV-506','r']],
+ rules:[
+  {id:'R1',name:'Direct Route Rule',if:['route(A, B)'],then:'reachable(A, B)',why:'A direct connection makes the target reachable.',est:'{B} is reachable from {A}.',not:'A route shows a possibility only.'},
+  {id:'R2',name:'Chained Route Rule',if:['route(A, B)','reachable(B, C)'],then:'reachable(A, C)',why:'Reachability extends through chains of connections (recursive).',est:'{C} is reachable from {A} through {B}.',not:'Reachable does not mean anyone used the route.'},
+  {id:'R3',name:'Displacement Rule',if:['listed_in(I, A)','found_in(I, B)','neq(A, B)'],then:'displaced(I)',why:'The item was found somewhere other than where it is catalogued.',est:'{I} was found away from its catalogued hall.',not:'Displacement does not show how or by whom.'},
+  {id:'R4',name:'Plausible Path Rule',if:['displaced(I)','listed_in(I, A)','found_in(I, B)','reachable(A, B)'],then:'plausible_path(I, A, B)',why:'A physical route links the catalogued location to the found location.',est:'A physical route links {A} to {B}, so a move of {I} is physically possible.',not:'Possible is not demonstrated.'},
+  {id:'R5',name:'Could Handle Rule',if:['on_shift(P)','cleared(P, store)','displaced(I)'],then:'could_handle(P, I)',why:'On shift with Store access while the item was displaced.',est:'{P} was on shift and cleared for the Store while {I} was displaced.',not:'It does not show {P} handled {I}.'},
+  {id:'R6',name:'Claim Needs Explanation Rule',if:['handled_by(P, trolley2)','not_cleared(P, store)'],then:'claim_requires_explanation(P)',why:'A claim of handling the trolley conflicts with the roster\u2019s access record.',est:'{P}\u2019s claim of moving trolley T2 conflicts with the lack of Store access.',not:'It does not show wrongdoing. It shows a gap in the account.'}],
+ open:['What was on trolley T2?','Who instructed Ishaan to move the trolley?','Was Leena on site after 18:00?'],
+ hyp:[{who:'omar',text:'Omar may have loaded the replica for transport as part of event setup. Untested.'},{who:'ishaan',text:'Ishaan may have been asked to move an unmarked trolley without knowing its contents. Untested.'}],
+ unknown:['What the trolley carried.','Who authorised the move.'],
+ limits:['The transport log does not name items.','Route facts show possibility, not use.','One handling fact rests on a reported claim.'],
+ conflictPreds:['claim_requires_explanation'],keyPreds:['plausible_path','could_handle']}
+];
+/* ===== Term representation, parser, unification, forward chaining ===== */
+function parseTerm(src){
+  const toks=[];let i=0;
+  while(i<src.length){
+    const c=src[i];
+    if(/\s/.test(c)){i++;continue;}
+    if(c==='('||c===')'||c===','){toks.push(c);i++;continue;}
+    const m=/^[A-Za-z0-9_]+/.exec(src.slice(i));
+    if(!m) throw new Error('Unexpected character "'+c+'" at position '+(i+1)+'.');
+    toks.push(m[0]);i+=m[0].length;
+  }
+  if(!toks.length) throw new Error('The term is empty.');
+  let p=0;
+  function term(){
+    const t=toks[p];
+    if(t===undefined) throw new Error('Unexpected end of input. A name was expected.');
+    if(!/^[A-Za-z0-9_]+$/.test(t)) throw new Error('Expected a name but found "'+t+'".');
+    p++;
+    if(toks[p]==='('){
+      p++;
+      if(toks[p]===')') throw new Error('"'+t+'" needs at least one argument.');
+      const args=[];
+      for(;;){
+        args.push(term());
+        if(toks[p]===','){p++;continue;}
+        if(toks[p]===')'){p++;break;}
+        throw new Error(toks[p]===undefined?'Missing a closing parenthesis.':'Expected "," or ")" but found "'+toks[p]+'".');
+      }
+      if(/^[A-Z_]/.test(t)) throw new Error('Predicate names must start with a lowercase letter ("'+t+'").');
+      return {t:'cmp',f:t,args};
+    }
+    return /^[A-Z_]/.test(t)?{t:'var',n:t}:{t:'const',n:t};
+  }
+  const r=term();
+  if(p<toks.length) throw new Error('Unexpected "'+toks[p]+'" after the end of the term.');
+  return r;
+}
+function toStr(t){
+  if(t.t==='cmp') return t.f+'('+t.args.map(toStr).join(', ')+')';
+  return t.n;
+}
+const hasOwn=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+function walk(t,s){while(t.t==='var'&&hasOwn(s,t.n)) t=s[t.n];return t;}
+function applyS(t,s){
+  t=walk(t,s);
+  if(t.t==='cmp') return {t:'cmp',f:t.f,args:t.args.map(a=>applyS(a,s))};
+  return t;
+}
+function occurs(v,t,s){
+  t=walk(t,s);
+  if(t.t==='var') return t.n===v.n;
+  if(t.t==='cmp') return t.args.some(a=>occurs(v,a,s));
+  return false;
+}
+function hasVar(t){return t.t==='var'||(t.t==='cmp'&&t.args.some(hasVar));}
+function termVars(t,out=[]){
+  if(t.t==='var'){if(!out.includes(t.n)) out.push(t.n);}
+  else if(t.t==='cmp') t.args.forEach(a=>termVars(a,out));
+  return out;
+}
+function termHas(t,name){
+  if(t.t==='const') return t.n===name;
+  if(t.t==='cmp') return t.args.some(a=>termHas(a,name));
+  return false;
+}
+/* Structural unification with a substitution map and occurs check. */
+function unify(a,b,s0,trace){
+  s0=s0||{};
+  const s=Object.assign({},s0);
+  const log=(kind,msg)=>{if(trace) trace.push({kind,msg,s:Object.assign({},s)});};
+  function u(x0,y0,depth){
+    const x=walk(x0,s),y=walk(y0,s);
+    log('compare','Compare '+toStr(applyS(x0,s))+' with '+toStr(applyS(y0,s)));
+    if(x.t==='var'&&y.t==='var'&&x.n===y.n){log('ok','Same variable on both sides: nothing to bind.');return null;}
+    if(x.t==='var'){
+      if(occurs(x,y,s)) return 'Occurs check failed: '+x.n+' appears inside '+toStr(applyS(y,s))+', which would make an infinite term.';
+      s[x.n]=y;log('bind','Bind '+x.n+' \u2192 '+toStr(applyS(y,s)));return null;
+    }
+    if(y.t==='var'){
+      if(occurs(y,x,s)) return 'Occurs check failed: '+y.n+' appears inside '+toStr(applyS(x,s))+', which would make an infinite term.';
+      s[y.n]=x;log('bind','Bind '+y.n+' \u2192 '+toStr(applyS(x,s)));return null;
+    }
+    if(x.t==='const'&&y.t==='const'){
+      if(x.n===y.n){log('ok','Constants match: '+x.n);return null;}
+      const rv=x0.t==='var'?x0:(y0.t==='var'?y0:null);
+      if(rv) return 'The repeated variable '+rv.n+' cannot equal two different constants ('+x.n+' and '+y.n+').';
+      return 'Constants differ: '+x.n+' \u2260 '+y.n+'.';
+    }
+    if(x.t==='cmp'&&y.t==='cmp'){
+      if(x.f!==y.f) return (depth===0?'Predicate names differ: ':'Function symbols differ: ')+x.f+' \u2260 '+y.f+'.';
+      if(x.args.length!==y.args.length) return 'Arity differs: '+x.f+'/'+x.args.length+' vs '+y.f+'/'+y.args.length+'.';
+      log('ok',(depth===0?'Predicate ':'Function ')+x.f+'/'+x.args.length+' matches on both sides. Unify the arguments pairwise.');
+      for(let i=0;i<x.args.length;i++){const r=u(x.args[i],y.args[i],depth+1);if(r) return r;}
+      return null;
+    }
+    return 'A constant cannot match a compound term: '+toStr(x)+' vs '+toStr(y)+'.';
+  }
+  const reason=u(a,b,0);
+  if(reason){log('fail',reason);return {ok:false,reason,s:s0,trace};}
+  log('done','Unification succeeded.');
+  return {ok:true,reason:null,s,trace};
+}
+function resolvedSubst(s){const o={};Object.keys(s).forEach(k=>{o[k]=toStr(applyS({t:'var',n:k},s));});return o;}
+function newBindings(sOld,sNew){const o={};Object.keys(sNew).forEach(k=>{if(!hasOwn(sOld,k)) o[k]=toStr(applyS({t:'var',n:k},sNew));});return o;}
+
+const BUILTINS=['neq','lt'];
+function basisOf(prem,byId){
+  let r='verified';
+  for(const id of prem){
+    const f=byId[id];if(!f) continue;
+    const k=f.kind==='derived'?f.basis:f.kind;
+    if(k==='temp') return 'temp';
+    if(k==='reported') r='reported';
+  }
+  return r;
+}
+/* Forward chaining with provenance. base: [{id,s,kind,ev}] rules: [{id,name,if:[...],then}] */
+function runEngine(base,rules){
+  const errors=[];
+  const facts=[];
+  base.forEach(f=>{
+    try{facts.push(Object.assign({},f,{p:f.p||parseTerm(f.s)}));}
+    catch(e){errors.push('Fact "'+f.s+'": '+e.message);}
+  });
+  const prules=[];
+  rules.forEach(r=>{
+    try{prules.push(Object.assign({},r,{pc:r.if.map(parseTerm),pt:parseTerm(r.then)}));}
+    catch(e){errors.push('Rule '+r.id+': '+e.message);}
+  });
+  const byId={};facts.forEach(f=>byId[f.id]=f);
+  const known=new Map(facts.map(f=>[toStr(f.p),f]));
+  const events=[];const info={};
+  prules.forEach(r=>info[r.id]={fired:0,deep:-1,why:''});
+  let dn=0,round=0,changed=true,guard=0;
+  while(changed&&guard++<40){
+    changed=false;round++;
+    events.push({k:'round',n:round});
+    for(const r of prules){
+      const buf=[{k:'rule',rule:r.id,n:round}];let newCount=0;
+      const snap=facts.slice();
+      const vars=[];r.pc.forEach(c=>termVars(c,vars));termVars(r.pt,vars);
+      const rec=(i,s,prem)=>{
+        if(i===r.pc.length){
+          const concl=applyS(r.pt,s);
+          info[r.id].fired++;
+          if(hasVar(concl)){buf.push({k:'warn',rule:r.id,text:'Conclusion '+toStr(concl)+' still has unbound variables, so it was not derived.'});return;}
+          const key=toStr(concl);
+          const sub={};vars.forEach(v=>{sub[v]=toStr(applyS({t:'var',n:v},s));});
+          if(known.has(key)){buf.push({k:'dup',rule:r.id,term:key,premises:prem.slice(),subst:sub});return;}
+          dn++;
+          const f={id:'D'+pad(dn),s:key,p:concl,kind:'derived',rule:r.id,premises:prem.slice(),subst:sub,round};
+          f.basis=basisOf(prem,byId);
+          facts.push(f);byId[f.id]=f;known.set(key,f);newCount++;changed=true;
+          buf.push({k:'derive',rule:r.id,fact:f.id,term:key,premises:prem.slice(),subst:sub,round});
+          return;
+        }
+        const cond=r.pc[i];const applied=applyS(cond,s);
+        buf.push({k:'cond',rule:r.id,i,total:r.pc.length,cond:toStr(cond),applied:toStr(applied)});
+        if(BUILTINS.includes(cond.f)){
+          const a=applied.args;let ok=false,text='';
+          if(a.length!==2) text=cond.f+' needs exactly two arguments.';
+          else if(!a.every(x=>x.t==='const')) text=toStr(applied)+' has unbound variables, so it cannot be evaluated.';
+          else if(cond.f==='neq'){ok=a[0].n!==a[1].n;text=a[0].n+' \u2260 '+a[1].n+' is '+ok+'.';}
+          else{
+            const x=Number(a[0].n),y=Number(a[1].n);
+            if(isNaN(x)||isNaN(y)) text='lt needs numeric arguments.';
+            else{ok=x<y;text=x+' < '+y+' is '+ok+'.';}
+          }
+          buf.push({k:'builtin',rule:r.id,i,cond:toStr(applied),ok,text});
+          if(ok) rec(i+1,s,prem);
+          else if(i>info[r.id].deep){info[r.id].deep=i;info[r.id].why='Built-in check failed: '+text;}
+          return;
+        }
+        let any=false;
+        for(const f of snap){
+          if(f.p.t!=='cmp'||f.p.f!==cond.f||f.p.args.length!==cond.args.length) continue;
+          const res=unify(cond,f.p,s);
+          buf.push({k:'cand',rule:r.id,i,cond:toStr(applied),fact:f.id,fs:f.s,ok:res.ok,reason:res.reason,bind:res.ok?newBindings(s,res.s):{}});
+          if(res.ok){any=true;rec(i+1,res.s,prem.concat(f.id));}
+        }
+        if(!any){
+          buf.push({k:'nocand',rule:r.id,i,cond:toStr(applied)});
+          if(i>info[r.id].deep){info[r.id].deep=i;info[r.id].why='No fact matches condition '+(i+1)+': '+toStr(applied);}
+        }
+      };
+      rec(0,{},[]);
+      if(round===1||newCount>0) events.push(...buf);
+    }
+  }
+  events.push({k:'fixpoint',round,total:facts.filter(f=>f.rule).length});
+  const unresolved=prules.filter(r=>info[r.id].fired===0).map(r=>({rule:r.id,name:r.name,why:info[r.id].why||'No complete match.'}));
+  return {facts,byId,events,info,rounds:round,derived:facts.filter(f=>f.rule),unresolved,errors,rules:prules};
+}
+function parseRuleLine(line){
+  const m=/^\s*([A-Za-z0-9_\-]+)\s*:\s*IF\s+(.+?)\s+THEN\s+(.+?)\s*$/i.exec(line);
+  if(!m) throw new Error('Use the form  R1: IF cond1 AND cond2 THEN conclusion');
+  const conds=m[2].split(/\s+AND\s+/i).map(x=>x.trim());
+  conds.forEach(parseTerm);parseTerm(m[3]);
+  return {id:m[1],name:'User rule '+m[1],if:conds,then:m[3].trim(),why:'User-defined rule.',est:'The rule conditions were satisfied.',not:'It establishes only what the rule encodes.'};
+}
+/* ===================== helpers ===================== */
+const ICONS={
+ home:'<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',
+ cases:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+ room:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+ vault:'<path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/>',
+ people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3.5-6 6.5-6s6 2 6.5 6M16 5a3.5 3.5 0 010 7M18 14c2 .7 3.5 2.5 3.5 6"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ board:'<circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6.5l9 .5M6.5 8l4 8M17.5 9l-4 7.5"/>',
+ cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+ report:'<path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+ menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ play:'<path d="M7 4l13 8-13 8z"/>',
+ step:'<path d="M5 4l10 8-10 8zM18 4v16"/>',
+ prev:'<path d="M19 4L9 12l10 8zM6 4v16"/>',
+ reset:'<path d="M4 12a8 8 0 108-8M4 4v5h5"/>',
+ copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',
+ print:'<path d="M7 9V3h10v6M7 17H5a2 2 0 01-2-2v-5h18v5a2 2 0 01-2 2h-2M7 14h10v7H7z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ search:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+ laptop:'<rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M2 19h20"/>',
+ key:'<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v4M15 12v3"/>',
+ file:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 14h7"/>',
+ bolt:'<path d="M13 2L5 14h6l-1 8 8-12h-6z"/>',
+ vase:'<path d="M9 3h6M10 3c0 3-4 4-4 9a6 6 0 0012 0c0-5-4-6-4-9M8 21h8"/>',
+ flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'
+};
+const IC=n=>'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[n]||'')+'</svg>';
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtT=t=>{const h=Math.floor(t/100),m=t%100;return (h>=24?'+1d ':'')+pad(h%24,2)+':'+pad(m,2);};
+const hueOf=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))%360;return h;};
+const sum=(a,f)=>a.reduce((x,y)=>x+f(y),0);
+const C=id=>CASES.find(c=>c.id===id);
+const cur=()=>C(S.caseId);
+const pOf=(c,id)=>c.people.find(p=>p.id===id);
+const pname=(c,id)=>{const p=pOf(c,id);return p?p.name:(id||'');};
+const evOf=(c,id)=>c.ev.find(e=>e.id===id);
+const ruleOf=(c,id)=>(c.rules||[]).find(r=>r.id===id);
+function nameOf(c,x){
+  const p=pOf(c,x);if(p) return p.name;
+  if(/^\d{4}$/.test(x)&&Number(x)<=3400) return fmtT(Number(x));
+  return String(x).replace(/_/g,' ');
+}
+function fill(str,sub,c){return str.replace(/\{(\w+)\}/g,(m,k)=>sub&&sub[k]!==undefined?nameOf(c,sub[k]):m);}
+const bd=(kind,label)=>'<span class="bd b-'+String(kind).toLowerCase().replace(/\s+/g,'-')+'">'+esc(label||kind)+'</span>';
+const kindBd=k=>({verified:bd('verified','Verified fact'),reported:bd('reported','Reported statement'),derived:bd('derived','Derived fact'),temp:bd('temp','Temporary fact'),hypothesis:bd('hypothesis','Hypothesis'),unknown:bd('unknown','Unknown')}[k]||bd(k));
+const basisNote=b=>b==='reported'?' <span class="bd b-reported">uses a reported claim</span>':b==='temp'?' <span class="bd b-temp">uses a temporary fact</span>':'';
+const tokens=q=>String(q||'').toLowerCase().split(/\s+/).filter(Boolean);
+function hl(text,toks){
+  let s=esc(text);
+  if(!toks||!toks.length) return s;
+  const re=new RegExp('('+toks.map(t=>esc(t).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','gi');
+  return s.replace(re,'<mark>$1</mark>');
+}
+function snippet(text,toks,len){
+  len=len||110;
+  const low=text.toLowerCase();let at=-1;
+  for(const t of toks){const i=low.indexOf(t);if(i>=0&&(at<0||i<at)) at=i;}
+  if(at<0) at=0;
+  const a=Math.max(0,at-35),b=Math.min(text.length,a+len);
+  return (a>0?'\u2026':'')+hl(text.slice(a,b),toks)+(b<text.length?'\u2026':'');
+}
+function copyText(txt){
+  const ok=()=>toast('Copied to clipboard');
+  const fb=()=>{try{const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);ok();}catch(e){toast('Copy is not available here');}};
+  try{navigator.clipboard.writeText(txt).then(ok,fb);}catch(e){fb();}
+}
+/* ===================== data prep ===================== */
+const BASE={},IDX=[],BLOB={};
+function prepCase(c){
+  c.F=c.facts.map(([s,ev,k],i)=>({id:'F'+pad(i+1),s,ev,kind:k==='r'?'reported':'verified'}));
+  c.F.forEach(f=>f.p=parseTerm(f.s));
+  c.people.forEach((p,i)=>p.sid='SUS-'+c.n+'0'+(i+1));
+  c.tl.forEach((e,i)=>e.id='TL'+c.n+'-'+pad(i+1,2));
+  c.locs=[...new Set(c.ev.flatMap(e=>e.loc).concat(c.tl.map(e=>e.loc).filter(Boolean)))];
+  BASE[c.id]=runEngine(c.F,c.rules);
+  IDX.push({type:'Case',c:c.id,id:c.id,title:c.id+' '+c.title,text:[c.id,c.title,c.desc,c.brief,c.cat,c.kw.join(' '),c.loc].join(' | ')});
+  c.people.forEach(p=>IDX.push({type:'Suspect',c:c.id,id:p.id,title:p.name+' ('+p.role+')',text:[p.name,p.id,p.sid,p.role,p.bg,p.where,p.access].join(' | ')}));
+  c.ev.forEach(e=>IDX.push({type:'Evidence',c:c.id,id:e.id,title:e.id+' '+e.title,text:[e.id,e.title,e.desc,e.cat,e.src,e.loc.join(' ')].join(' | ')}));
+  c.st.forEach(s=>IDX.push({type:'Statement',c:c.id,id:s.id,title:s.id+' by '+pname(c,s.who),text:[s.id,pname(c,s.who),s.text,s.ctx].join(' | ')}));
+  c.tl.forEach(e=>IDX.push({type:'Timeline',c:c.id,id:e.id,title:fmtT(e.t)+' '+e.d,text:[e.d,e.loc,e.ev,e.id,pname(c,e.who),e.conflict||''].join(' | ')}));
+  c.F.forEach(f=>IDX.push({type:'Fact',c:c.id,id:f.id,title:f.id+' '+f.s,text:[f.s,f.ev,f.id].join(' | ')}));
+  BLOB[c.id]=IDX.filter(r=>r.c===c.id).map(r=>r.text).join(' ').toLowerCase();
+}
+let CUSTOM_RAW=[];
+try{CUSTOM_RAW=JSON.parse(localStorage.getItem('mm-custom-cases')||'[]');if(!Array.isArray(CUSTOM_RAW)) CUSTOM_RAW=[];}catch(e){CUSTOM_RAW=[];}
+CUSTOM_RAW.forEach(r=>{try{CASES.push(JSON.parse(JSON.stringify(r)));}catch(e){}});
+const saveCustom=()=>{try{localStorage.setItem('mm-custom-cases',JSON.stringify(CUSTOM_RAW));}catch(e){}};
+CASES.forEach(prepCase);
+/* ===================== state ===================== */
+const S={page:'overview',caseId:'CASE-001',tab:'overview',collapsed:innerWidth<900,dashCat:'All',
+ cf:{q:'',cat:'All',diff:'All',status:'All',sort:'id',view:'grid'},
+ vault:{tab:'evidence',q:'',cat:'All',ver:'All',sort:'id',view:'list'},
+ st:{q:'',who:'All',cmp:[]},
+ tlf:{q:'',who:'All',loc:'All',from:'All',to:'All',rev:'no'},
+ sus:null,drawer:null,confirm:null,toastMsg:null,
+ search:{open:false,q:'',mode:'text',type:'All',qk:'present',qloc:'lab',qperson:'',qfrom:'1700',qto:'2100',focus:false},
+ board:{q:'',sel:null,hide:{},vb:null,nodes:[]},
+ rtab:'case',done:{},justDragged:false,
+ activity:[{t:'Session',m:'Local reasoning engine initialised with 5 seeded cases.'},{t:'Engine',m:'Forward chaining reached a fixpoint on all seeded cases.'}],
+ lab:{a:'has_key(X, lab)',b:'has_key(amit, lab)',res:null,err:'',facts:['has_key(amit, lab)','present(amit, lab)'],factIn:'',ferr:'',rules:'R1: IF has_key(X, lab) AND present(X, lab) THEN can_access(X, lab)\nR2: IF can_access(X, lab) AND present(X, lab) THEN could_enter(X, lab)',rerr:[],run:null}};
+const RSS={},RUNS={};
+const RS=(id)=>{id=id||S.caseId;return RSS[id]||(RSS[id]={idx:0,temp:[],selFact:null,selDer:null,view:'all',showSub:true,showRules:false,hlRule:null,q:'',inp:'',err:''});};
+function run(c){
+  const rs=RS(c.id),key=c.id+'|'+rs.temp.join('~');
+  if(!RUNS[key]){
+    const base=c.F.concat(rs.temp.map((s,i)=>({id:'T'+pad(i+1),s,kind:'temp',ev:null})));
+    RUNS[key]=runEngine(base,c.rules);
+  }
+  return RUNS[key];
+}
+const log=(t,m)=>{S.activity.unshift({t,m});if(S.activity.length>12) S.activity.pop();};
+const TASKS=['suspects','evidence','statements','timeline','board','reasoning','report'];
+function mark(sec){const c=cur();(S.done[c.id]=S.done[c.id]||{})[sec]=true;}
+const progress=c=>{const d=S.done[c.id]||{};return TASKS.filter(t=>d[t]).length;};
+function currentSec(){
+  if(S.page==='room') return S.tab;
+  if(S.page==='vault') return S.vault.tab;
+  return {suspects:'suspects',timeline:'timeline',board:'board',reasoning:'reasoning',reports:'report'}[S.page]||null;
+}
+function toast(m){S.toastMsg=m;render();clearTimeout(toast.t);toast.t=setTimeout(()=>{S.toastMsg=null;render();},1700);}
+/* ===================== small components ===================== */
+function sel(key,opts,val,labels){
+  return '<select id="in-'+key+'" data-in="'+key+'">'+opts.map(o=>'<option value="'+esc(o)+'" '+(o===val?'selected':'')+'>'+esc(labels&&labels[o]!==undefined?labels[o]:o)+'</option>').join('')+'</select>';
+}
+function seg(key,opts,val){return '<div class="seg">'+opts.map(([v,l])=>'<button class="'+(v===val?'on':'')+'" data-act="set" data-k="'+key+'" data-v="'+v+'">'+l+'</button>').join('')+'</div>';}
+function chipP(c,id){const p=pOf(c,id);return p?'<span class="chip" data-act="goSus" data-id="'+p.id+'" data-c="'+c.id+'">'+IC('people')+esc(p.name)+'</span>':'';}
+function chipE(c,id){const e=evOf(c,id);return e?'<span class="chip mono" data-act="open" data-type="ev" data-c="'+c.id+'" data-id="'+id+'" title="'+esc(e.title)+'">'+id+'</span>':'';}
+function chipF(c,id){return '<span class="chip mono" data-act="open" data-type="fact" data-c="'+c.id+'" data-id="'+id+'">'+id+'</span>';}
+function avatar(p,cls){const h=hueOf(p.id);return '<div class="'+cls+'" style="background:hsl('+h+' 45% 62%)">'+esc(p.name.split(' ').map(w=>w[0]).filter(x=>/[A-Z]/.test(x)).slice(0,2).join(''))+'</div>';}
+function empty(msg,btn){return '<div class="empty"><div style="font-family:var(--type);font-size:18px;color:var(--text)">Nothing here</div><div>'+msg+'</div>'+(btn||'')+'</div>';}
+function factRow(f,c){
+  const cls={verified:'v',reported:'r',derived:'d',temp:'h'}[f.kind]||'';
+  return '<div class="li '+cls+'" data-act="open" data-type="fact" data-c="'+c.id+'" data-id="'+f.id+'"><div class="row"><span class="mono" style="color:var(--amber)">'+f.id+'</span><span class="mono">'+esc(f.s)+'</span><span class="sp"></span>'+kindBd(f.kind)+'</div></div>';
+}
+function thumb(c){
+  return '<div class="thumb" style="background:linear-gradient(135deg,hsl('+c.hue+' 45% 28%),hsl('+((c.hue+40)%360)+' 50% 14%))">'+IC(c.icon)+'<i>illustration</i></div>';
+}
+function caseCard(c,q){
+  const toks=tokens(q);let m='';
+  if(toks.length){const r=IDX.find(x=>x.c===c.id&&toks.every(t=>x.text.toLowerCase().includes(t)))||IDX.find(x=>x.c===c.id&&toks.some(t=>x.text.toLowerCase().includes(t)));if(r) m='<div class="muted" style="font-size:12px"><span class="bd">'+r.type+'</span> '+snippet(r.text,toks,100)+'</div>';}
+  return '<div class="ccard" data-act="openCase" data-id="'+c.id+'">'+thumb(c)+'<div class="cbody"><div class="row"><span class="mono muted">'+c.id+'</span><span class="sp"></span>'+bd(c.status)+'</div><div class="ctitle">'+hl(c.title,toks)+'</div><div class="muted" style="font-size:13px">'+hl(c.desc,toks)+'</div>'+m+'<div class="cmeta">'+bd('blue',c.cat)+bd(c.diff)+(c.custom?bd('temp','Your case'):'')+'</div><div class="cstat"><span>'+c.people.length+' suspects</span><span>'+c.ev.length+' evidence</span><span>'+BASE[c.id].derived.length+' derived</span></div><button class="btn sm" style="align-self:flex-start" data-act="openCase" data-id="'+c.id+'">Investigate Case</button></div></div>';
+}
+/* ===================== pages ===================== */
+const NAV=[['overview','Overview','home'],['cases','Case Explorer','cases'],['builder','Case Builder','plus'],['room','Investigation Room','room'],['vault','Evidence Vault','vault'],['suspects','Suspect Dossiers','people'],['timeline','Timeline','clock'],['board','Evidence Board','board'],['reasoning','AI Reasoning Lab','cpu'],['reports','Investigation Reports','report'],['about','Settings / About','info']];
+function overview(){
+  const ev=sum(CASES,c=>c.ev.length),der=sum(CASES,c=>BASE[c.id].derived.length),act=CASES.filter(c=>c.status==='Active').length;
+  const cats=['All'].concat([...new Set(CASES.map(c=>c.cat))]);
+  const recent=CASES.filter(c=>S.dashCat==='All'||c.cat===S.dashCat);
+  const c=cur();
+  const tl=c.tl.slice().sort((a,b)=>a.t-b.t).slice(0,5);
+  return '<div class="hero"><span class="stamp">CLASSIFIED</span><div class="lbl">MysteryMind &middot; rule-based symbolic AI demonstration</div><h1>Investigation Command Center</h1><p>Review active cases, trace evidence, and examine conclusions supported by the available facts. <i>Every clue has a story. Every conclusion needs a reason.</i></p><div class="row"><button class="btn pri" data-act="openCase" data-id="CASE-001">'+IC('room')+'Open Investigation</button><button class="btn" data-act="demo">'+IC('cpu')+'Run AI Reasoning Demo</button><button class="btn" data-act="openSearch">'+IC('search')+'Search all records</button></div></div>'+
+  '<div class="g4 mb">'+[['Total Cases',CASES.length,'Fictional, seeded'],['Active Investigations',act,'Status: Active'],['Evidence Records',ev,'Across all cases'],['Derived Facts',der,'Computed by the engine']].map(s=>'<div class="panel stat"><div class="lbl">'+s[0]+'</div><div class="n">'+s[1]+'</div><div class="muted" style="font-size:12px">'+s[2]+'</div></div>').join('')+'</div>'+
+  '<div class="g32"><div style="display:grid;gap:14px;align-content:start"><div class="panel"><h2 class="sh">Recent cases</h2><div class="row mb">'+cats.map(x=>'<span class="chip '+(S.dashCat===x?'sel':'')+'" data-act="set" data-k="dashCat" data-v="'+esc(x)+'">'+esc(x)+'</span>').join('')+'</div><ul class="plain">'+recent.map(x=>'<li class="li" data-act="openCase" data-id="'+x.id+'"><div class="row"><span class="mono" style="color:var(--amber)">'+x.id+'</span><b>'+esc(x.title)+'</b><span class="sp"></span>'+bd(x.status)+bd(x.diff)+'</div></li>').join('')+'</ul></div>'+
+  '<div><h2 class="sh">Featured investigations</h2><div class="cards" style="margin-top:12px">'+CASES.slice(0,2).map(x=>caseCard(x,'')).join('')+'</div></div></div>'+
+  '<div style="display:grid;gap:14px;align-content:start"><div class="panel"><h2 class="sh">Recent activity</h2><ul class="plain">'+S.activity.slice(0,6).map(a=>'<li class="li"><span class="lbl">'+esc(a.t)+'</span><div>'+esc(a.m)+'</div></li>').join('')+'</ul></div>'+
+  '<div class="panel"><h2 class="sh">Reasoning activity</h2><ul class="plain">'+CASES.map(x=>{const r=BASE[x.id];return '<li class="li" data-act="openReason" data-id="'+x.id+'"><div class="row"><span class="mono">'+x.id+'</span><span class="muted">'+x.cat+'</span><span class="sp"></span><span class="mono">'+x.F.length+' &rarr; +'+r.derived.length+'</span></div><div class="muted" style="font-size:12px">'+r.rounds+' rounds, '+r.events.length+' trace steps</div></li>';}).join('')+'</ul></div></div></div>'+
+  '<div class="g2 mt"><div class="panel"><h2 class="sh">Timeline preview: '+esc(c.id)+'</h2><div class="tl">'+tl.map(e=>'<div class="tle '+tlCls(e)+'" data-act="open" data-type="tl" data-c="'+c.id+'" data-id="'+e.id+'"><span class="tt">'+fmtT(e.t)+'</span> '+esc(e.d)+'</div>').join('')+'</div><button class="btn sm" data-act="nav" data-p="timeline">Full timeline</button></div>'+
+  '<div class="panel"><h2 class="sh">Quick actions</h2><div class="row"><button class="btn" data-act="openSearch">'+IC('search')+'Search evidence</button><button class="btn" data-act="nav" data-p="reasoning">'+IC('cpu')+'Reasoning lab</button><button class="btn" data-act="nav" data-p="builder">'+IC('plus')+'Create your own case</button><button class="btn" data-act="labOpen">'+IC('cpu')+'Custom unification lab</button><button class="btn" data-act="nav" data-p="reports">'+IC('report')+'Generate report</button><button class="btn" data-act="nav" data-p="board">'+IC('board')+'Evidence board</button></div><p class="muted" style="font-size:12.5px">Numbers on this page are computed from the seeded case data and the local engine. They do not change at random.</p></div></div>';
+}
+const tlCls=e=>e.type==='gap'?'gap':e.ver==='Reported'?'r':e.ver==='Unknown'?'u':'';
+function filteredCases(){
+  const f=S.cf,toks=tokens(f.q);
+  const order={Easy:0,Medium:1,Hard:2};
+  const r=CASES.filter(c=>(f.cat==='All'||c.cat===f.cat)&&(f.diff==='All'||c.diff===f.diff)&&(f.status==='All'||c.status===f.status)&&toks.every(t=>BLOB[c.id].includes(t)));
+  r.sort((a,b)=>f.sort==='title'?a.title.localeCompare(b.title):f.sort==='diff'?order[a.diff]-order[b.diff]:f.sort==='evidence'?b.ev.length-a.ev.length:a.id.localeCompare(b.id));
+  return r;
+}
+function casesPage(){
+  const f=S.cf,list=filteredCases();
+  const cats=['All'].concat([...new Set(CASES.map(c=>c.cat))]);
+  return '<div class="ph"><div><h1>Case Explorer</h1><p>Search across titles, descriptions, suspects, evidence, statements, locations and fact labels. This is plain text search, not AI deduction.</p></div></div>'+
+  '<div class="panel mb"><div class="row"><input id="in-cf.q" data-in="cf.q" type="search" class="grow" placeholder="Search cases, e.g. rahul, camera, laboratory" value="'+esc(f.q)+'">'+sel('cf.cat',cats,f.cat,{All:'All categories'})+sel('cf.diff',['All','Easy','Medium','Hard'],f.diff,{All:'All difficulty'})+sel('cf.status',['All','Active','Under Review','Unresolved'],f.status,{All:'All status'})+sel('cf.sort',['id','title','diff','evidence'],f.sort,{id:'Sort: Case ID',title:'Sort: Title',diff:'Sort: Difficulty',evidence:'Sort: Evidence count'})+seg('cf.view',[['grid','Grid'],['list','List']],f.view)+'<button class="btn" data-act="clearCF">Clear filters</button></div><div class="muted mt" style="font-size:12.5px;margin-top:10px">'+list.length+' of '+CASES.length+' cases match</div></div>'+
+  (list.length?'<div class="cards '+(f.view==='list'?'list':'')+'">'+list.map(c=>caseCard(c,f.q)).join('')+'</div>':empty('No case matches these filters. Try a shorter search term or clear the filters.','<div class="mt"><button class="btn" data-act="clearCF">Clear filters</button></div>'));
+}
+const ROOM_TABS=[['overview','Overview'],['suspects','Suspects'],['evidence','Evidence'],['statements','Statements'],['timeline','Timeline'],['board','Evidence Board'],['reasoning','AI Reasoning'],['report','Final Report']];
+function roomPage(){
+  const c=cur(),pr=progress(c),pct=Math.round(pr/TASKS.length*100);
+  return '<div class="panel"><div class="row"><span class="mono" style="color:var(--amber)">'+c.id+'</span>'+bd(c.status)+bd(c.diff)+bd('blue',c.cat)+'<span class="sp"></span>'+(c.custom?'<button class="btn sm danger" data-act="deleteCaseAsk" data-id="'+c.id+'">Delete this case</button> ':'')+'<span class="stamp">CASE FILE</span></div><h1 style="font-family:var(--type);font-weight:400;font-size:28px;margin:8px 0">'+esc(c.title)+'</h1><p class="muted" style="max-width:760px;margin:0 0 12px">'+esc(c.brief)+'</p><dl class="kv"><dt>Incident location</dt><dd>'+esc(c.loc)+'</dd><dt>Incident time</dt><dd>'+esc(c.when)+'</dd><dt>Progress</dt><dd><div class="bar" style="margin:6px 0 3px"><div style="width:'+pct+'%"></div></div><span class="muted" style="font-size:12px">'+pr+' of '+TASKS.length+' investigation steps completed (suspects, evidence, statements, timeline, board, reasoning, report)</span></dd></dl></div>'+
+  '<div class="tabs">'+ROOM_TABS.map(t=>'<button class="'+(S.tab===t[0]?'on':'')+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+sec(S.tab,c);
+}
+function sec(name,c){
+  switch(name){
+    case 'overview':return roomOverview(c);
+    case 'suspects':return suspects(c);
+    case 'evidence':return evidenceSec(c);
+    case 'statements':return statementsSec(c);
+    case 'timeline':return timelineSec(c);
+    case 'board':return boardSec(c);
+    case 'reasoning':return reasoningSec(c);
+    case 'report':return reportSec(c);
+  }
+  return '';
+}
+function roomOverview(c){
+  const R=run(c);
+  const vf=R.facts.filter(f=>f.kind==='verified').slice(0,6);
+  const top=c.ev.filter(e=>e.rel==='High').slice(0,3);
+  return '<div class="g2"><div style="display:grid;gap:14px;align-content:start"><div class="panel"><h2 class="sh">Investigation objective</h2><p style="margin:0">'+esc(c.obj)+'</p><p class="muted" style="margin:10px 0 0">Primary question: <b style="color:var(--text)">'+esc(c.q)+'</b></p></div>'+
+  '<div class="panel"><h2 class="sh">Known facts</h2><ul class="plain">'+vf.map(f=>factRow(f,c)).join('')+'</ul><button class="btn sm mt" style="margin-top:10px" data-act="tab" data-t="reasoning">See all '+R.facts.length+' facts in the reasoning lab</button></div>'+
+  '<div class="panel"><h2 class="sh">Unresolved questions</h2><ul class="plain">'+c.open.map(q=>'<li class="li u">'+esc(q)+'</li>').join('')+'</ul></div></div>'+
+  '<div style="display:grid;gap:14px;align-content:start"><div class="panel"><h2 class="sh">Important evidence</h2><ul class="plain">'+top.map(e=>'<li class="li" data-act="open" data-type="ev" data-c="'+c.id+'" data-id="'+e.id+'"><div class="row"><span class="mono" style="color:var(--amber)">'+e.id+'</span><b>'+esc(e.title)+'</b><span class="sp"></span>'+bd(e.ver)+'</div><div class="muted" style="font-size:12.5px">'+esc(e.desc.slice(0,120))+(e.desc.length>120?'\u2026':'')+'</div></li>').join('')+'</ul></div>'+
+  '<div class="panel"><h2 class="sh">Key persons</h2><div class="row">'+c.people.map(p=>chipP(c,p.id)).join('')+'</div></div>'+
+  '<div class="panel"><h2 class="sh">Quick actions</h2><div class="row"><button class="btn pri" data-act="tab" data-t="reasoning">'+IC('cpu')+'Run reasoning</button><button class="btn" data-act="tab" data-t="board">'+IC('board')+'Evidence board</button><button class="btn" data-act="tab" data-t="report">'+IC('report')+'Final report</button></div></div></div></div>';
+}
+/* ---------- suspects ---------- */
+function suspects(c){
+  mark('suspects');
+  if(!S.sus||!pOf(c,S.sus)) S.sus=c.people[0].id;
+  const p=pOf(c,S.sus),R=run(c);
+  const about=R.facts.filter(f=>termHas(f.p,p.id));
+  const ver=about.filter(f=>f.kind==='verified'),rep=about.filter(f=>f.kind==='reported'),der=about.filter(f=>f.kind==='derived'||f.kind==='temp');
+  const conf=der.filter(f=>c.conflictPreds.includes(f.p.f)),sup=der.filter(f=>!c.conflictPreds.includes(f.p.f));
+  const sts=c.st.filter(s=>s.who===p.id);
+  const evs=c.ev.filter(e=>e.who.includes(p.id));
+  const evt=c.tl.filter(e=>e.who===p.id);
+  const hyp=c.hyp.filter(h=>h.who===p.id);
+  const list=(arr,none)=>arr.length?'<ul class="plain">'+arr.join('')+'</ul>':'<div class="muted" style="font-size:12.5px">'+none+'</div>';
+  return '<div class="g32" style="grid-template-columns:minmax(220px,1fr) minmax(0,3fr)"><div class="panel" style="align-self:start"><h2 class="sh">People of interest</h2><div style="display:grid;gap:8px">'+c.people.map(x=>'<button class="pcard '+(x.id===p.id?'sel':'')+'" data-act="selSus" data-id="'+x.id+'">'+avatar(x,'mini')+'<span><b>'+esc(x.name)+'</b><br><span class="muted" style="font-size:12px">'+esc(x.role)+'</span></span></button>').join('')+'</div><div class="muted" style="font-size:12px;margin-top:12px">Presence, access or opportunity never equals guilt. Dossiers list facts, claims and unknowns only.</div></div>'+
+  '<div style="display:grid;gap:14px;align-content:start"><div class="panel"><div class="row" style="align-items:flex-start;gap:20px">'+(function(){const h=hueOf(p.id);return '<div class="pol"><div style="background:hsl('+h+' 45% 62%)">'+esc(p.name.split(' ').map(w=>w[0]).filter(x=>/[A-Z]/.test(x)).slice(0,2).join(''))+'</div><span>'+p.sid+'</span></div>';})()+'<div class="grow"><h1 style="font-family:var(--type);font-weight:400;font-size:26px;margin:0">'+esc(p.name)+'</h1><div class="muted">'+esc(p.role)+' &middot; <span class="mono">'+p.sid+'</span></div><dl class="kv mt" style="margin-top:12px"><dt>Background</dt><dd>'+esc(p.bg)+'</dd><dt>Recorded whereabouts</dt><dd>'+esc(p.where)+'</dd><dt>Access permissions</dt><dd>'+esc(p.access)+'</dd></dl></div></div></div>'+
+  '<div class="g2"><div class="panel"><h3>'+kindBd('verified')+'</h3>'+list(ver.map(f=>factRow(f,c)),'No verified facts mention this person.')+'</div><div class="panel"><h3>'+kindBd('reported')+'</h3>'+list(rep.map(f=>factRow(f,c)).concat(sts.map(s=>'<li class="li r" data-act="open" data-type="st" data-c="'+c.id+'" data-id="'+s.id+'"><span class="mono" style="color:var(--amber)">'+s.id+'</span> &ldquo;'+esc(s.text)+'&rdquo;</li>')),'No reported claims.')+'</div>'+
+  '<div class="panel"><h3>Supported observations</h3>'+list(sup.map(f=>factRow(f,c)),'No derived observations yet. Run the reasoning lab.')+'</div><div class="panel"><h3>Conflicting observations</h3>'+list(conf.map(f=>factRow(f,c)).concat(evt.filter(e=>e.conflict).map(e=>'<li class="li u" data-act="open" data-type="tl" data-c="'+c.id+'" data-id="'+e.id+'"><span class="tt">'+fmtT(e.t)+'</span> '+esc(e.conflict)+'</li>')),'No conflicts encoded for this person.')+'</div>'+
+  '<div class="panel"><h3>'+kindBd('hypothesis')+'</h3>'+list(hyp.map(h=>'<li class="li h">'+esc(h.text)+'</li>'),'None recorded.')+'</div><div class="panel"><h3>'+kindBd('unknown')+'</h3>'+list(p.unk.map(u=>'<li class="li u">'+esc(u)+'</li>'),'None.')+'</div></div>'+
+  '<div class="panel"><h3>Related evidence</h3><div class="row">'+(evs.length?evs.map(e=>chipE(c,e.id)+' <span class="muted" style="font-size:12.5px">'+esc(e.title)+'</span>').join(''):'<span class="muted">No evidence linked.</span>')+'</div><h3 style="margin-top:14px">Relevant timeline events</h3>'+list(evt.map(e=>'<li class="li" data-act="open" data-type="tl" data-c="'+c.id+'" data-id="'+e.id+'"><span class="tt">'+fmtT(e.t)+'</span> '+esc(e.d)+' '+bd(e.ver)+'</li>'),'No timeline events.')+'</div></div></div>';
+}
+/* ---------- evidence ---------- */
+const EV_CATS=['All','Physical','Digital Record','Access Log','Witness Statement','Camera Observation','Document','Timeline Record','Environmental'];
+const RELORD={High:0,Medium:1,Low:2};
+function evidenceList(c){
+  const v=S.vault,toks=tokens(v.q);
+  let r=c.ev.filter(e=>(v.cat==='All'||e.cat===v.cat)&&(v.ver==='All'||e.ver===v.ver)&&toks.every(t=>(e.id+' '+e.title+' '+e.desc+' '+e.src+' '+e.loc.join(' ')+' '+e.who.map(x=>pname(c,x)).join(' ')).toLowerCase().includes(t)));
+  r.sort((a,b)=>v.sort==='time'?a.t-b.t:v.sort==='rel'?RELORD[a.rel]-RELORD[b.rel]:v.sort==='cat'?a.cat.localeCompare(b.cat):a.id.localeCompare(b.id));
+  return r;
+}
+function evidenceSec(c){
+  mark('evidence');
+  const v=S.vault,list=evidenceList(c),toks=tokens(v.q);
+  const card=e=>'<div class="ccard" style="margin-top:0" data-act="open" data-type="ev" data-c="'+c.id+'" data-id="'+e.id+'"><div class="cbody"><div class="row"><span class="mono" style="color:var(--amber)">'+e.id+'</span><span class="sp"></span>'+bd(e.ver)+'</div><div class="ctitle" style="font-size:15px">'+hl(e.title,toks)+'</div><div class="muted" style="font-size:12.5px">'+hl(e.desc,toks)+'</div><div class="cmeta">'+bd('blue',e.cat)+bd(e.rel,e.rel+' reliability')+'</div><div class="muted mono" style="font-size:11.5px">Collected '+fmtT(e.t)+' &middot; '+esc(e.src)+'</div></div></div>';
+  return '<div class="panel mb"><div class="row"><input id="in-vault.q" data-in="vault.q" type="search" class="grow" placeholder="Search evidence" value="'+esc(v.q)+'">'+sel('vault.cat',EV_CATS,v.cat,{All:'All categories'})+sel('vault.ver',['All','Verified','Reported','Unverified'],v.ver,{All:'All status'})+sel('vault.sort',['id','time','rel','cat'],v.sort,{id:'Sort: ID',time:'Sort: Collection time',rel:'Sort: Reliability',cat:'Sort: Category'})+seg('vault.view',[['list','List'],['grid','Grid']],v.view)+'</div><div class="muted" style="font-size:12.5px;margin-top:8px">'+list.length+' of '+c.ev.length+' records in '+c.id+'</div></div>'+
+  (list.length?(v.view==='grid'?'<div class="cards">'+list.map(card).join('')+'</div>':'<div class="panel p0"><ul class="plain" style="gap:0">'+list.map(e=>'<li class="li" style="border-radius:0;border-width:0 0 1px 0" data-act="open" data-type="ev" data-c="'+c.id+'" data-id="'+e.id+'"><div class="row"><span class="mono" style="color:var(--amber)">'+e.id+'</span><b>'+hl(e.title,toks)+'</b>'+bd('blue',e.cat)+'<span class="sp"></span>'+bd(e.rel,e.rel)+bd(e.ver)+'</div><div class="muted" style="font-size:12.5px">'+hl(e.desc,toks)+'</div></li>').join('')+'</ul></div>'):empty('No evidence matches the search or filters.','<div class="mt"><button class="btn" data-act="clearVault">Clear filters</button></div>'));
+}
+/* ---------- statements ---------- */
+function diffWords(a,b){
+  const norm=w=>w.toLowerCase().replace(/[^a-z0-9:]/g,'');
+  const A=a.split(/\s+/),B=b.split(/\s+/);
+  const sa=new Set(A.map(norm)),sb=new Set(B.map(norm));
+  const mk=(arr,other)=>arr.map(w=>other.has(norm(w))||!norm(w)?esc(w):'<mark>'+esc(w)+'</mark>').join(' ');
+  return [mk(A,sb),mk(B,sa)];
+}
+function statementsSec(c){
+  mark('statements');
+  const f=S.st,toks=tokens(f.q);
+  const list=c.st.filter(s=>(f.who==='All'||s.who===f.who)&&toks.every(t=>(s.id+' '+pname(c,s.who)+' '+s.text+' '+s.ctx).toLowerCase().includes(t)));
+  const cmp=f.cmp.filter(id=>c.st.some(s=>s.id===id));
+  let cmpHTML='';
+  if(cmp.length===2){
+    const [a,b]=cmp.map(id=>c.st.find(s=>s.id===id));const [da,db]=diffWords(a.text,b.text);
+    cmpHTML='<div class="panel mb"><h2 class="sh">Side-by-side comparison</h2><div class="g2"><div><div class="lbl">'+a.id+' &middot; '+esc(pname(c,a.who))+' &middot; stated '+fmtT(a.t)+'</div><p>'+da+'</p></div><div><div class="lbl">'+b.id+' &middot; '+esc(pname(c,b.who))+' &middot; stated '+fmtT(b.t)+'</div><p>'+db+'</p></div></div><div class="muted" style="font-size:12.5px">Highlighted words appear in one statement but not the other. Differences can be innocent wording. Check the related evidence before reading anything into them.</div></div>';
+  }else if(cmp.length===1) cmpHTML='<div class="panel mb muted">Select one more statement to compare.</div>';
+  return '<div class="panel mb"><div class="row"><input id="in-st.q" data-in="st.q" type="search" class="grow" placeholder="Search statements" value="'+esc(f.q)+'">'+sel('st.who',['All'].concat(c.people.map(p=>p.id)),f.who,Object.assign({All:'All speakers'},Object.fromEntries(c.people.map(p=>[p.id,p.name]))))+'<button class="btn" data-act="clearCmp">Clear comparison</button></div></div>'+cmpHTML+
+  (list.length?'<div style="display:grid;gap:10px">'+list.map(s=>'<div class="panel"><div class="row"><span class="mono" style="color:var(--amber)">'+s.id+'</span>'+chipP(c,s.who)+'<span class="muted mono" style="font-size:12px">stated '+fmtT(s.t)+'</span><span class="sp"></span>'+bd('reported','Reported claim')+'<button class="btn sm '+(cmp.includes(s.id)?'on':'')+'" data-act="cmpTog" data-id="'+s.id+'">'+(cmp.includes(s.id)?'Selected':'Compare')+'</button></div><p style="font-size:15px;margin:10px 0 8px;cursor:pointer" data-act="open" data-type="st" data-c="'+c.id+'" data-id="'+s.id+'">&ldquo;'+hl(s.text,toks)+'&rdquo;</p><div class="muted" style="font-size:12.5px">'+esc(s.ctx)+'. Related evidence: </div><div class="row" style="margin-top:6px">'+(s.ev.length?s.ev.map(id=>chipE(c,id)).join(''):'<span class="muted" style="font-size:12.5px">none</span>')+'</div></div>').join('')+'</div>':empty('No statement matches the search.'));
+}
+/* ---------- timeline ---------- */
+function timelineSec(c){
+  mark('timeline');
+  const f=S.tlf,toks=tokens(f.q);
+  const times=[...new Set(c.tl.map(e=>e.t))].sort((a,b)=>a-b);
+  const tOpts=['All'].concat(times.map(String));const tLab=Object.fromEntries(times.map(t=>[String(t),fmtT(t)]));tLab.All='Any';
+  let list=c.tl.filter(e=>(f.who==='All'||e.who===f.who)&&(f.loc==='All'||e.loc===f.loc)&&(f.from==='All'||e.t>=Number(f.from))&&(f.to==='All'||e.t<=Number(f.to))&&toks.every(t=>(e.d+' '+e.loc+' '+e.ev+' '+e.id+' '+pname(c,e.who)+' '+(e.conflict||'')).toLowerCase().includes(t)));
+  list=list.slice().sort((a,b)=>a.t-b.t);
+  if(f.rev==='yes') list.reverse();
+  return '<div class="panel mb"><div class="row"><input id="in-tlf.q" data-in="tlf.q" type="search" class="grow" placeholder="Search events (try an evidence ID)" value="'+esc(f.q)+'">'+sel('tlf.who',['All'].concat(c.people.map(p=>p.id)),f.who,Object.assign({All:'All people'},Object.fromEntries(c.people.map(p=>[p.id,p.name]))))+sel('tlf.loc',['All'].concat(c.locs),f.loc,{All:'All locations'})+'<span class="muted">From</span>'+sel('tlf.from',tOpts,f.from,tLab)+'<span class="muted">to</span>'+sel('tlf.to',tOpts,f.to,tLab)+seg('tlf.rev',[['no','Chronological'],['yes','Reverse']],f.rev)+'<button class="btn" data-act="clearTL">Clear</button></div><div class="muted" style="font-size:12.5px;margin-top:8px">'+list.length+' of '+c.tl.length+' entries. Red dashed entries mark gaps in the record. Conflict flags appear only where the case data records one.</div></div>'+
+  (list.length?'<div class="tl">'+list.map(e=>'<div class="tle '+tlCls(e)+(e.conflict?' cf':'')+'" data-act="open" data-type="tl" data-c="'+c.id+'" data-id="'+e.id+'"><div class="row"><span class="tt">'+fmtT(e.t)+'</span>'+(e.type==='gap'?bd('unknown','Missing information'):bd(e.ver))+(e.who?'<span class="muted">'+esc(pname(c,e.who))+'</span>':'')+'<span class="muted" style="font-size:12.5px">'+esc(e.loc||'')+'</span><span class="sp"></span><span class="mono muted" style="font-size:11.5px">'+e.ev+'</span></div><div style="margin-top:4px">'+hl(e.d,toks)+'</div>'+(e.conflict?'<div class="flag">'+IC('flag')+esc(e.conflict)+'</div>':'')+'</div>').join('')+'</div>':empty('No timeline entry matches these filters.','<div class="mt"><button class="btn" data-act="clearTL">Clear filters</button></div>'));
+}
+/* ===================== evidence board ===================== */
+const TYPE_COL={person:'#D6A85F',statement:'#E58FB0',evidence:'#82A9C8',location:'#6FD1C1',event:'#B39DDB',fact:'#A8B5C2',rule:'#F0845C',derived:'#66C69A'};
+const TYPE_LAB={person:'People',statement:'Statements',evidence:'Evidence',location:'Locations',event:'Events',fact:'Logical facts',rule:'Rules',derived:'Derived conclusions'};
+const ORDER=['person','statement','evidence','location','event','fact','rule','derived'];
+function graph(c){
+  const R=run(c),N={},E=[];
+  const add=(id,type,label,ref)=>{N[id]={id,type,label,ref};};
+  const edge=(a,b,k)=>{if(N[a]&&N[b]&&!E.some(e=>e.a===a&&e.b===b&&e.k===k)) E.push({a,b,k});};
+  c.people.forEach(p=>add('p:'+p.id,'person',p.name,p.id));
+  c.ev.forEach(e=>add('e:'+e.id,'evidence',e.id+' '+e.title,e.id));
+  c.locs.forEach(l=>add('l:'+l,'location',l,l));
+  c.st.forEach(s=>add('s:'+s.id,'statement',s.id+' '+pname(c,s.who),s.id));
+  c.tl.forEach(e=>{if(e.type!=='gap') add('t:'+e.id,'event',fmtT(e.t)+' '+e.d,e.id);});
+  R.facts.forEach(f=>add((f.rule?'d:':'f:')+f.id,f.rule?'derived':'fact',f.id+' '+f.s,f.id));
+  c.rules.forEach(r=>add('r:'+r.id,'rule',r.id+' '+r.name,r.id));
+  c.ev.forEach(e=>{e.who.forEach(w=>edge('p:'+w,'e:'+e.id,'Associated with evidence'));e.loc.forEach(l=>edge('e:'+e.id,'l:'+l,'Recorded at location'));});
+  c.st.forEach(s=>{edge('p:'+s.who,'s:'+s.id,'Mentioned in statement');s.ev.forEach(e=>edge('s:'+s.id,'e:'+e,'Associated with evidence'));});
+  c.tl.forEach(e=>{if(e.type==='gap') return;edge('p:'+e.who,'t:'+e.id,'Event involves person');edge('t:'+e.id,'l:'+e.loc,'Recorded at location');edge('t:'+e.id,'e:'+e.ev,'Associated with evidence');});
+  R.facts.forEach(f=>{
+    if(f.ev) edge((f.rule?'d:':'f:')+f.id,'e:'+f.ev,'Supports fact');
+    if(f.rule){
+      f.premises.forEach(pid=>{const pf=R.byId[pid];edge((pf.rule?'d:':'f:')+pid,'r:'+f.rule,'Used by rule');});
+      edge('r:'+f.rule,'d:'+f.id,'Derived from');
+    }
+  });
+  return {N,E};
+}
+function boardSec(c){
+  mark('board');
+  const b=S.board,{N,E}=graph(c);
+  const vis=Object.values(N).filter(n=>!b.hide[n.type]);
+  const cols=ORDER.filter(t=>!b.hide[t]);
+  cols.forEach((t,ci)=>{vis.filter(n=>n.type===t).forEach((n,i)=>{n.x=30+ci*236;n.y=30+i*44;});});
+  b.nodes=vis;
+  const ids=new Set(vis.map(n=>n.id));
+  const edges=E.filter(e=>ids.has(e.a)&&ids.has(e.b)&&N[e.a].x!==N[e.b].x);
+  const sel=b.sel&&ids.has(b.sel)?b.sel:null;
+  const nb=new Set();if(sel){nb.add(sel);edges.forEach(e=>{if(e.a===sel) nb.add(e.b);if(e.b===sel) nb.add(e.a);});}
+  const toks=tokens(b.q);
+  const matches=vis.filter(n=>toks.length&&toks.every(t=>n.label.toLowerCase().includes(t)));
+  const mset=new Set(matches.map(n=>n.id));
+  const vb=b.vb?b.vb.x+' '+b.vb.y+' '+b.vb.w+' '+b.vb.h:'0 0 1600 600';
+  const eS=edges.map(e=>{
+    let a=N[e.a],z=N[e.b];if(a.x>z.x){const t=a;a=z;z=t;}
+    const x1=a.x+200,y1=a.y+15,x2=z.x,y2=z.y+15,mx=(x1+x2)/2;
+    const hi=sel&&(e.a===sel||e.b===sel);
+    return '<path class="be '+(hi?'hi':sel?'dim':'')+'" d="M'+x1+' '+y1+' C'+mx+' '+y1+' '+mx+' '+y2+' '+x2+' '+y2+'"><title>'+esc(e.k)+'</title></path>';
+  }).join('');
+  const nS=vis.map(n=>{
+    const cls=[n.id===sel?'sel':'',sel&&!nb.has(n.id)?'dim':'',toks.length?(mset.has(n.id)?'hit':'dim'):''].join(' ');
+    const lab=n.label.length>29?n.label.slice(0,28)+'\u2026':n.label;
+    return '<g class="bn '+cls+'" data-act="bSel" data-id="'+esc(n.id)+'" transform="translate('+n.x+' '+n.y+')"><title>'+esc(TYPE_LAB[n.type]+': '+n.label)+'</title><rect width="200" height="30" rx="5"/><rect width="6" height="30" rx="2" style="fill:'+TYPE_COL[n.type]+';stroke:none"/><text x="14" y="19">'+esc(lab)+'</text></g>';
+  }).join('');
+  let detail='<div class="muted">Select a node to highlight everything connected to it.</div>';
+  if(sel){
+    const n=N[sel],conn=edges.filter(e=>e.a===sel||e.b===sel);
+    detail='<div class="row"><span class="bd" style="color:'+TYPE_COL[n.type]+'">'+TYPE_LAB[n.type]+'</span><b>'+esc(n.label)+'</b></div><div class="row mt" style="margin-top:10px"><button class="btn sm" data-act="bOpen" data-id="'+esc(sel)+'">Open record</button><button class="btn sm" data-act="bClear">Clear selection</button></div><h3 style="margin-top:12px">'+conn.length+' connections</h3><ul class="plain">'+conn.map(e=>{const o=N[e.a===sel?e.b:e.a];return '<li class="li" data-act="bSel" data-id="'+esc(o.id)+'"><span class="lbl">'+esc(e.k)+'</span><div style="font-size:13px">'+esc(o.label)+'</div></li>';}).join('')+'</ul>';
+  }
+  return '<div class="panel mb"><div class="row"><input id="in-board.q" data-in="board.q" type="search" class="grow" placeholder="Search nodes" value="'+esc(b.q)+'">'+(toks.length?'<span class="muted" style="font-size:12.5px">'+matches.length+' nodes match</span>':'')+'<button class="btn sm" data-act="bZoom" data-v="in">+</button><button class="btn sm" data-act="bZoom" data-v="out">&minus;</button><button class="btn" data-act="bFit">Fit to screen</button><button class="btn" data-act="bReset">Reset view</button></div><div class="row" style="margin-top:10px">'+ORDER.map(t=>'<span class="chip '+(b.hide[t]?'':'sel')+'" data-act="bType" data-t="'+t+'" style="'+(b.hide[t]?'opacity:.55':'')+'"><span style="width:9px;height:9px;border-radius:2px;background:'+TYPE_COL[t]+'"></span>'+TYPE_LAB[t]+'</span>').join('')+'</div></div>'+
+  '<div class="g32" style="grid-template-columns:minmax(0,3fr) minmax(220px,1fr)"><div><div class="bwrap"><svg id="boardsvg" viewBox="'+vb+'" preserveAspectRatio="xMidYMid meet">'+eS+nS+'</svg></div><div class="muted" style="font-size:12px;margin-top:6px">Drag to pan. Scroll to zoom. Every connection comes from the case data or from the engine provenance: evidence links, statement speakers, rule inputs and derivations. Hover a line for its meaning.</div></div><div class="panel" style="align-self:start"><h2 class="sh">Node details</h2>'+detail+'</div></div>';
+}
+function fitBoard(){
+  const svg=$('#boardsvg'),ns=S.board.nodes;
+  if(!svg||!ns||!ns.length) return;
+  const xs=ns.map(n=>n.x),ys=ns.map(n=>n.y);
+  const minx=Math.min(...xs)-20,maxx=Math.max(...xs)+220,miny=Math.min(...ys)-20,maxy=Math.max(...ys)+50;
+  const r=svg.getBoundingClientRect(),ar=(r.width||900)/(r.height||560);
+  let w=maxx-minx,h=maxy-miny;
+  if(w/h>ar){const nh=w/ar;S.board.vb={x:minx,y:miny-(nh-h)/2,w,h:nh};}
+  else{const nw=h*ar;S.board.vb={x:minx-(nw-w)/2,y:miny,w:nw,h};}
+  const v=S.board.vb;svg.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);
+}
+/* ===================== reasoning ===================== */
+const substChips=o=>Object.entries(o||{}).map(([k,v])=>'<span class="sub">'+k+' &rarr; '+esc(v)+'</span>').join(' ');
+function evLine(e,isCur,c,showSub){
+  let cls='',h='';
+  switch(e.k){
+    case 'round':cls='hd';h='Round '+e.n+': match every rule against the current fact base';break;
+    case 'rule':{const r=ruleOf(c,e.rule);cls='hd';h='Rule '+e.rule+(r?': '+esc(r.name):'');break;}
+    case 'cond':h='Condition '+(e.i+1)+'/'+e.total+': <span class="mono">'+esc(e.applied)+'</span>';break;
+    case 'cand':cls=e.ok?'ok':'no';h='Try '+e.fact+' <span class="mono">'+esc(e.fs)+'</span> against <span class="mono">'+esc(e.cond)+'</span> &rarr; '+(e.ok?'<b class="okc">UNIFIES</b> '+(showSub?substChips(e.bind):''):'<b class="err">FAILS</b>: '+esc(e.reason));break;
+    case 'nocand':cls='no';h='No fact satisfies <span class="mono">'+esc(e.cond)+'</span>. This branch stops here.';break;
+    case 'builtin':cls=e.ok?'ok':'no';h='Built-in check <span class="mono">'+esc(e.cond)+'</span>: '+esc(e.text);break;
+    case 'derive':cls='dv';h='<b>DERIVED '+e.fact+'</b> <span class="mono">'+esc(e.term)+'</span> from '+e.premises.join(' + ')+' '+(showSub?substChips(e.subst):'');break;
+    case 'dup':h='Already known: <span class="mono">'+esc(e.term)+'</span>. Duplicate not added.';break;
+    case 'warn':cls='no';h=esc(e.text);break;
+    case 'fixpoint':cls='hd';h='Fixpoint reached after '+e.round+' rounds. '+e.total+' facts derived. No rule can add anything new.';break;
+  }
+  return '<div class="ev '+cls+' '+(isCur?'cur':'')+'">'+h+'</div>';
+}
+function stepCard(e,c,R){
+  if(!e) return '<div class="step muted">Press <b>Next Step</b> or <b>Step Through</b> to watch the engine work one operation at a time, or <b>Run Reasoning</b> to run it to the end.</div>';
+  const L=(l,v)=>'<div><div class="lbl">'+l+'</div>'+v+'</div>';
+  if(e.k==='cand') return '<div class="step">'+L('Rule condition','<span class="mono">'+esc(e.cond)+'</span>')+L('Candidate fact','<span class="mono">'+e.fact+' '+esc(e.fs)+'</span>')+L('Unification',e.ok?'<span class="okc">SUCCESS</span> '+(Object.keys(e.bind).length?substChips(e.bind):'<span class="muted">no new bindings</span>'):'<span class="err">FAIL: '+esc(e.reason)+'</span>')+'</div>';
+  if(e.k==='derive'){const r=R.rules.find(x=>x.id===e.rule);return '<div class="step">'+L('Rule',e.rule+(r?' - '+esc(r.name):''))+L('Facts matched',e.premises.map(id=>chipF(c,id)).join(' ')||'none')+L('Substitution',substChips(e.subst))+L('Conclusion','<span class="mono okc">'+e.fact+' '+esc(e.term)+'</span>')+'</div>';}
+  return '<div class="step">'+evLine(e,false,c,true)+'</div>';
+}
+function explainHTML(f,c,R){
+  const rule=R.rules.find(r=>r.id===f.rule);if(!rule) return '';
+  const s={};Object.entries(f.subst).forEach(([k,v])=>{s[k]=parseTerm(v);});
+  let pi=0;
+  const conds=rule.if.map(cs=>{
+    const pc=parseTerm(cs),ap=toStr(applyS(pc,s));
+    if(BUILTINS.includes(pc.f)) return '<li class="li d"><span class="okc">&#10003;</span> <span class="mono">'+esc(ap)+'</span> <span class="muted">built-in check passed</span></li>';
+    const pid=f.premises[pi++];
+    return '<li class="li d"><span class="okc">&#10003;</span> <span class="mono">'+esc(ap)+'</span> <span class="muted">matched</span> '+(pid?chipF(c,pid):'')+'</li>';
+  }).join('');
+  const prem=f.premises.map(id=>R.byId[id]);
+  return '<div class="panel" style="background:var(--bg2)"><h3>Why '+f.id+' was derived'+basisNote(f.basis)+'</h3>'+
+  '<div class="chain mb"><div class="cn" data-act="rsSelFact" data-id="'+(f.premises[0]||'')+'"><div class="lbl">Initial facts</div>'+f.premises.map(id=>'<div class="mono" style="font-size:12px">'+id+'</div>').join('')+'</div><span class="ar">&rarr;</span><div class="cn"><div class="lbl">Unification</div>'+substChips(f.subst)+'</div><span class="ar">&rarr;</span><div class="cn" data-act="rsShowRule" data-id="'+f.rule+'"><div class="lbl">Rule application</div>'+f.rule+'</div><span class="ar">&rarr;</span><div class="cn" data-act="rsSelDer" data-id="'+f.id+'"><div class="lbl">Derived fact</div><span class="mono" style="font-size:12px">'+esc(f.s)+'</span></div><span class="ar">&rarr;</span><div class="cn"><div class="lbl">Explanation</div>below</div></div>'+
+  '<dl class="kv"><dt>Conclusion</dt><dd>'+esc(fill(rule.est,f.subst,c))+'</dd><dt>Rule</dt><dd>'+rule.id+': '+esc(rule.name)+'<div class="muted" style="font-size:12.5px">'+esc(rule.why)+'</div></dd><dt>Facts used</dt><dd>'+prem.map(p=>'<div><span class="mono" style="color:var(--amber)">'+p.id+'</span> <span class="mono">'+esc(p.s)+'</span> '+kindBd(p.kind)+'</div>').join('')+'</dd><dt>Substitution</dt><dd>'+Object.entries(f.subst).map(([k,v])=>'<span class="sub">'+k+' = '+esc(v)+'</span>').join(' ')+'</dd><dt>Conditions</dt><dd><ul class="plain">'+conds+'</ul></dd><dt>Result</dt><dd><span class="mono okc">'+esc(f.s)+'</span></dd><dt>Establishes</dt><dd>'+esc(fill(rule.est,f.subst,c))+'</dd><dt>Does not establish</dt><dd>'+esc(fill(rule.not,f.subst,c))+'</dd></dl></div>';
+}
+function reasoningSec(c){
+  const rs=RS(c.id),R=run(c);
+  const topTabs=seg('rtab',[['case','Case reasoning'],['lab','Custom lab']],S.rtab);
+  if(S.rtab==='lab') return '<div class="mb">'+topTabs+'</div>'+labHTML();
+  const ev=R.events,idx=Math.min(rs.idx,ev.length),shown=ev.slice(0,idx);
+  if(idx>0) mark('reasoning');
+  const derIds=new Set(shown.filter(e=>e.k==='derive').map(e=>e.fact));
+  const toks=tokens(rs.q);
+  const facts=R.facts.filter(f=>{
+    if(f.kind==='derived'&&!derIds.has(f.id)) return false;
+    if(rs.view==='derived'&&f.kind!=='derived') return false;
+    return !toks.length||toks.every(t=>(f.id+' '+f.s).toLowerCase().includes(t));
+  });
+  const sf=rs.selFact&&R.byId[rs.selFact]&&(R.byId[rs.selFact].kind!=='derived'||derIds.has(rs.selFact))?R.byId[rs.selFact]:null;
+  const done=idx>=ev.length;
+  const sd=rs.selDer&&derIds.has(rs.selDer)?R.byId[rs.selDer]:null;
+  const curE=idx>0?ev[idx-1]:null;
+  const left='<div class="panel"><h2 class="sh">Knowledge base</h2><input id="in-rs.q" data-in="rs.q" type="search" style="width:100%" placeholder="Search facts" value="'+esc(rs.q)+'"><div class="row mt" style="margin:8px 0">'+seg('rs.view',[['all','Show All Facts'],['derived','Show Derived Facts']],rs.view)+'</div><div class="scroll">'+(facts.length?facts.map(f=>'<div class="li '+({verified:'v',reported:'r',derived:'d',temp:'h'}[f.kind])+' '+(sf&&sf.id===f.id?'sel':'')+'" data-act="rsSelFact" data-id="'+f.id+'"><div class="row"><span class="mono" style="color:var(--amber)">'+f.id+'</span>'+kindBd(f.kind)+'<span class="sp"></span>'+(f.kind==='temp'?'<button class="btn sm danger" data-act="rsDel" data-id="'+f.id+'" title="Remove temporary fact">'+IC('x')+'</button>':'')+'</div><div class="mono">'+hl(f.s,toks)+'</div></div>').join(''):'<div class="muted">No facts to show.</div>')+'</div>'+
+  (sf?'<div class="step mt" style="margin-top:10px"><div class="lbl">Source metadata</div><div class="mono">'+sf.id+' '+esc(sf.s)+'</div><div>'+kindBd(sf.kind)+basisNote(sf.basis)+'</div>'+(sf.ev?'<div>Source: '+chipE(c,sf.ev)+' <span class="muted" style="font-size:12.5px">'+esc((evOf(c,sf.ev)||{}).title||'')+'</span></div>':sf.kind==='temp'?'<div class="muted" style="font-size:12.5px">Added by you. Not backed by an evidence record.</div>':'<div class="muted" style="font-size:12.5px">Derived by rule '+sf.rule+' from '+sf.premises.join(', ')+'.</div>')+'</div>':'')+
+  '<h3 style="margin-top:14px">Add a temporary fact</h3><div class="row"><input id="in-rs.inp" data-in="rs.inp" type="text" class="grow mono" placeholder="present(rahul, lab)" value="'+esc(rs.inp)+'"><button class="btn" data-act="rsAdd">'+IC('plus')+'Add</button></div>'+(rs.err?'<div class="err">'+esc(rs.err)+'</div>':'')+'<div class="muted" style="font-size:12px;margin-top:6px">Ground facts only: lowercase constants, no variables.'+(rs.temp.length?' <a href="#" data-act="rsResetTemp" style="color:var(--amber)">Remove all '+rs.temp.length+' temporary facts</a>':'')+'</div></div>';
+  const rulesBox=rs.showRules?'<div class="panel" style="margin-bottom:12px;background:var(--bg2)"><h3>Rule list</h3><ul class="plain">'+c.rules.map(r=>'<li class="li '+(rs.hlRule===r.id||(curE&&curE.rule===r.id)?'sel':'')+'"><b>'+r.id+': '+esc(r.name)+'</b><div class="mono">IF '+r.if.map(esc).join(' AND ')+'<br>THEN '+esc(r.then)+'</div><div class="muted" style="font-size:12.5px">'+esc(r.why)+'</div></li>').join('')+'</ul></div>':'';
+  const center='<div class="panel"><h2 class="sh">Rule execution</h2><div class="row mb"><button class="btn pri" data-act="rsRun">'+IC('play')+'Run Reasoning</button><button class="btn" data-act="rsStep">'+IC('step')+'Step Through</button><button class="btn" data-act="rsPrev" '+(idx<=0?'disabled':'')+'>'+IC('prev')+'Previous</button><button class="btn" data-act="rsNext" '+(done?'disabled':'')+'>'+IC('step')+'Next Step</button><button class="btn" data-act="rsReset">'+IC('reset')+'Reset</button><button class="btn" data-act="rsExample">Try Example</button></div><div class="row mb"><button class="btn sm '+(rs.showSub?'on':'')+'" data-act="tog" data-k="rs.showSub">Show Substitutions</button><button class="btn sm '+(rs.showRules?'on':'')+'" data-act="tog" data-k="rs.showRules">Show Rule List</button><span class="sp"></span><span class="muted mono" style="font-size:12px">step '+idx+' / '+ev.length+'</span></div>'+rulesBox+stepCard(curE,c,R)+'<div class="term" id="trace">'+(shown.length?shown.map((e,i)=>evLine(e,i===idx-1,c,rs.showSub)).join(''):'<span class="muted">The trace appears here. Every line is produced by the local engine: unify(), then rule firing.</span>')+'</div><div class="muted" style="font-size:12px;margin-top:6px">Rule-based symbolic reasoning: structural unification plus forward chaining. No language model is involved.</div></div>';
+  const ders=shown.filter(e=>e.k==='derive').map(e=>R.byId[e.fact]);
+  const right='<div class="panel"><h2 class="sh">Derived facts</h2><div class="scroll">'+(ders.length?ders.map(f=>'<div class="li d '+(sd&&sd.id===f.id?'sel':'')+'" data-act="rsSelDer" data-id="'+f.id+'"><div class="row"><span class="mono" style="color:var(--blue)">'+f.id+'</span><span class="mono">'+esc(f.s)+'</span></div><div class="muted" style="font-size:12px">Rule '+f.rule+' from '+f.premises.join(' + ')+'</div>'+(rs.showSub?'<div style="margin-top:4px">'+substChips(f.subst)+'</div>':'')+basisNote(f.basis)+'</div>').join(''):'<div class="muted">Nothing derived yet. Step through or run the engine.</div>')+'</div><h3 style="margin-top:14px">Unresolved conditions</h3>'+(done?(R.unresolved.length?'<ul class="plain">'+R.unresolved.map(u=>'<li class="li u"><b>'+u.rule+'</b> '+esc(u.name)+'<div class="muted" style="font-size:12.5px">'+esc(u.why)+'. This rule did not fire.</div></li>').join('')+'</ul>':'<div class="muted" style="font-size:12.5px">Every rule fired at least once. Open case questions are listed in the report.</div>'):'<div class="muted" style="font-size:12.5px">Shown once the run reaches its end.</div>')+(R.errors.length?'<div class="err">'+R.errors.map(esc).join('<br>')+'</div>':'')+'</div>';
+  return '<div class="mb">'+topTabs+'</div><div class="rg">'+left+center+right+'</div>'+(sd?'<div class="mt" id="explain">'+explainHTML(sd,c,R)+'</div>':'');
+}
+/* ===================== custom lab ===================== */
+const SAMPLES={A:['has_key(X, lab)','has_key(amit, lab)'],B:['present(X, lab)','present(rahul, lab)'],C:['has_key(X, lab)','present(amit, lab)'],D:['owns(X, X)','owns(amit, rahul)'],E:['located(X, room(Y))','located(amit, room(lab))'],occ:['p(X, f(X))','p(Y, Y)']};
+function labUnify(){
+  const L=S.lab;L.err='';L.res=null;
+  try{
+    const a=parseTerm(L.a),b=parseTerm(L.b),trace=[];
+    const r=unify(a,b,{},trace);
+    L.res={a:toStr(a),b:toStr(b),ok:r.ok,reason:r.reason,sub:r.ok?resolvedSubst(r.s):null,inst:r.ok?toStr(applyS(a,r.s)):null,trace};
+    log('Unification',(r.ok?'Unified ':'Failed to unify ')+toStr(a)+' with '+toStr(b)+'.');
+  }catch(e){L.err=e.message;}
+}
+function labRun(){
+  const L=S.lab;L.rerr=[];L.run=null;
+  const rules=[];
+  L.rules.split('\n').forEach((ln,i)=>{
+    if(!ln.trim()||ln.trim()[0]==='#') return;
+    try{rules.push(parseRuleLine(ln));}catch(e){L.rerr.push('Line '+(i+1)+': '+e.message);}
+  });
+  if(L.rerr.length) return;
+  if(!rules.length){L.rerr.push('Add at least one rule.');return;}
+  L.run=runEngine(L.facts.map((s,i)=>({id:'F'+pad(i+1),s,kind:'temp'})),rules);
+  L.run.cc={rules:L.run.rules};
+  log('Inference','Custom lab: '+L.run.derived.length+' facts derived in '+L.run.rounds+' rounds.');
+}
+function labHTML(){
+  const L=S.lab,r=L.res,R=L.run;
+  const dummy={people:[]};
+  const tr=r?r.trace.map(t=>'<div class="ev '+(t.kind==='fail'?'no':t.kind==='bind'||t.kind==='done'?'ok':'')+'">'+esc(t.msg)+'</div>').join(''):'';
+  const unif='<div class="panel"><h2 class="sh">Unification playground</h2><div class="row mb"><button class="btn sm" data-act="labSample" data-v="A">Successful matching</button><button class="btn sm" data-act="labSample" data-v="C">Failed predicate matching</button><button class="btn sm" data-act="labSample" data-v="D">Repeated-variable failure</button><button class="btn sm" data-act="labSample" data-v="E">Nested terms</button><button class="btn sm" data-act="labSample" data-v="occ">Occurs check</button><button class="btn sm" data-act="labSample" data-v="multi">Multi-step inference</button><button class="btn sm" data-act="labSample" data-v="B">Demo B</button></div>'+
+  '<div class="g2"><div><div class="lbl">Term 1</div><input id="in-lab.a" data-in="lab.a" type="text" class="mono" style="width:100%" value="'+esc(L.a)+'"></div><div><div class="lbl">Term 2</div><input id="in-lab.b" data-in="lab.b" type="text" class="mono" style="width:100%" value="'+esc(L.b)+'"></div></div><div class="row mt" style="margin-top:10px"><button class="btn pri" data-act="labUnify">'+IC('play')+'Run unification</button></div>'+
+  (L.err?'<div class="err" style="margin-top:8px">'+esc(L.err)+'</div>':'')+
+  (r?'<div class="step mt" style="margin-top:12px"><div style="font-family:var(--type);font-size:22px" class="'+(r.ok?'okc':'err')+'">'+(r.ok?'SUCCESS':'FAIL')+'</div>'+(r.ok?'<div><div class="lbl">Substitution</div>'+(Object.keys(r.sub).length?Object.entries(r.sub).map(([k,v])=>'<span class="sub">'+k+' = '+esc(v)+'</span>').join(' '):'<span class="muted">empty (terms are identical)</span>')+'</div><div><div class="lbl">Unified term</div><span class="mono">'+esc(r.inst)+'</span></div>':'<div><div class="lbl">Reason</div>'+esc(r.reason)+'</div>')+'<div class="lbl">Execution trace</div><div class="term" style="max-height:240px">'+tr+'</div></div>':'<div class="muted" style="margin-top:10px;font-size:12.5px">Pick a sample or type two terms, then run unification.</div>')+'</div>';
+  const facts='<ul class="plain">'+L.facts.map((f,i)=>'<li class="li"><div class="row"><span class="mono">'+esc(f)+'</span><span class="sp"></span><button class="btn sm danger" data-act="labDelFact" data-i="'+i+'">'+IC('x')+'</button></div></li>').join('')+'</ul>';
+  let out='';
+  if(R){
+    out='<div class="mt" style="margin-top:12px"><h3>Derived facts ('+R.derived.length+', '+R.rounds+' rounds)</h3>'+(R.derived.length?'<ul class="plain">'+R.derived.map(f=>'<li class="li d"><div class="row"><span class="mono" style="color:var(--blue)">'+f.id+'</span><span class="mono">'+esc(f.s)+'</span></div><div class="muted" style="font-size:12px">'+f.rule+' from '+f.premises.join(' + ')+'</div>'+substChips(f.subst)+'</li>').join('')+'</ul>':'<div class="muted">No rule was satisfied by these facts.</div>')+(R.unresolved.length?'<h3 style="margin-top:10px">Unresolved</h3><ul class="plain">'+R.unresolved.map(u=>'<li class="li u"><b>'+u.rule+'</b>: '+esc(u.why)+'</li>').join('')+'</ul>':'')+'<h3 style="margin-top:10px">Trace</h3><div class="term">'+R.events.map(e=>evLine(e,false,dummy,true)).join('')+'</div></div>';
+  }
+  const inf='<div class="panel"><h2 class="sh">Inference sandbox</h2><h3>Temporary facts</h3>'+(L.facts.length?facts:'<div class="muted">No facts. Add one below.</div>')+'<div class="row" style="margin-top:8px"><input id="in-lab.factIn" data-in="lab.factIn" type="text" class="grow mono" placeholder="present(rahul, lab)" value="'+esc(L.factIn)+'"><button class="btn" data-act="labAddFact">'+IC('plus')+'Add fact</button></div>'+(L.ferr?'<div class="err">'+esc(L.ferr)+'</div>':'')+
+  '<h3 style="margin-top:14px">Rules</h3><textarea id="in-lab.rules" data-in="lab.rules" rows="5" spellcheck="false">'+esc(L.rules)+'</textarea>'+(L.rerr.length?'<div class="err">'+L.rerr.map(esc).join('<br>')+'</div>':'')+
+  '<div class="row" style="margin-top:10px"><button class="btn pri" data-act="labRun">'+IC('play')+'Run forward chaining</button><button class="btn danger" data-act="labResetAsk">'+IC('reset')+'Reset experiment</button></div>'+out+'</div>';
+  const syn='<div class="panel"><h2 class="sh">Term syntax</h2><div class="g3"><div><b>Constants</b><div class="muted">Lowercase or numeric: <span class="mono">amit</span>, <span class="mono">lab</span>, <span class="mono">1930</span></div></div><div><b>Variables</b><div class="muted">Start with a capital: <span class="mono">X</span>, <span class="mono">Y</span>, <span class="mono">T1</span></div></div><div><b>Compound terms</b><div class="muted"><span class="mono">predicate(arg1, arg2)</span>, nesting allowed: <span class="mono">located(X, room(Y))</span></div></div></div><p class="muted" style="margin:10px 0 0;font-size:12.5px">Rules: <span class="mono">R1: IF cond1 AND cond2 THEN conclusion</span>. Built-in checks: <span class="mono">neq(A, B)</span> and <span class="mono">lt(A, B)</span> need ground arguments. Input is parsed into structured terms. Nothing is executed as code.</p></div>';
+  return '<div style="display:grid;gap:14px">'+unif+inf+syn+'</div>';
+}
+/* ===================== report ===================== */
+function verdict(c,R){
+  const keyD=R.derived.filter(f=>c.keyPreds.includes(f.p.f));
+  return {keyD,primary:c.open.length?'Unresolved':(keyD.length?'Supported by encoded facts and rules':'Not supported by available facts'),overall:!R.derived.length?'Not supported by available facts':(keyD.length&&!c.open.length?'Supported by encoded facts and rules':keyD.length?'Partially supported':'Unresolved')};
+}
+function reportMD(c){
+  const R=run(c),rs=RS(c.id),v=verdict(c,R),L=[];
+  const ver=R.facts.filter(f=>f.kind==='verified'),rep=R.facts.filter(f=>f.kind==='reported');
+  L.push('# MysteryMind Investigation Report: '+c.id,'**'+c.title+'**','','Generated: '+new Date().toLocaleString()+'. Engine: local forward chaining with structural unification (rule-based symbolic AI, not a language model).');
+  if(rs.temp.length) L.push('Note: '+rs.temp.length+' temporary fact(s) added by the investigator are included and labelled.');
+  L.push('','## 1. Case details','- Category: '+c.cat+', difficulty '+c.diff+', status '+c.status,'- Location: '+c.loc,'- Time: '+c.when,'- Objective: '+c.obj,'','## 2. Incident summary',c.brief);
+  L.push('','## 3. Verified facts');ver.forEach(f=>L.push('- `'+f.id+'` `'+f.s+'` (source '+f.ev+')'));
+  L.push('','## 4. Reported statements');c.st.forEach(s=>L.push('- '+s.id+' '+pname(c,s.who)+' (stated '+fmtT(s.t)+'): "'+s.text+'"'));rep.forEach(f=>L.push('- Encoded claim `'+f.id+'` `'+f.s+'`'));
+  L.push('','## 5. Evidence reviewed');c.ev.forEach(e=>L.push('- '+e.id+' '+e.title+' ('+e.cat+', '+e.ver+', reliability '+e.rel+')'));
+  L.push('','## 6. Rules applied');c.rules.forEach(r=>{const n=R.derived.filter(f=>f.rule===r.id).length,i=R.info[r.id];L.push('- '+r.id+' '+r.name+': '+(i&&i.fired?n+' new fact(s)':'did not fire'));});
+  L.push('','## 7. Successful unifications');
+  const dv=R.events.filter(e=>e.k==='derive');
+  if(dv.length) dv.forEach(e=>L.push('- '+e.rule+': '+Object.entries(e.subst).map(([k,x])=>k+' = '+x).join(', ')+' using '+e.premises.join(' + ')+' gives `'+e.term+'`'));else L.push('- None.');
+  L.push('','## 8. Derived facts');
+  if(R.derived.length) R.derived.forEach(f=>{const r=ruleOf(c,f.rule)||R.rules.find(x=>x.id===f.rule);L.push('- `'+f.id+'` `'+f.s+'` by '+f.rule+' from '+f.premises.join(' + ')+'. '+fill(r.est,f.subst,c)+(f.basis==='reported'?' (depends on a reported claim)':f.basis==='temp'?' (depends on a temporary fact)':''));});else L.push('- None.');
+  L.push('','## 9. Unresolved conditions');
+  R.unresolved.forEach(u=>L.push('- Rule '+u.rule+' ('+u.name+') did not fire: '+u.why));
+  c.open.forEach(q=>L.push('- '+q));
+  L.push('','## 10. Conflicting records');
+  const cf=c.tl.filter(e=>e.conflict);
+  cf.forEach(e=>L.push('- '+fmtT(e.t)+' '+e.d+' Conflict: '+e.conflict));
+  R.derived.filter(f=>c.conflictPreds.includes(f.p.f)).forEach(f=>L.push('- Derived `'+f.s+'`'));
+  if(!cf.length&&!R.derived.some(f=>c.conflictPreds.includes(f.p.f))) L.push('- None encoded.');
+  L.push('','## 11. Alternative explanations');c.hyp.forEach(h=>L.push('- Hypothesis (untested): '+h.text));L.push('- Access, presence or opportunity facts are equally consistent with innocent explanations.');
+  L.push('','## 12. Limitations');c.limits.forEach(x=>L.push('- '+x));L.push('- Text search and logical inference are separate. Only derived facts above come from the rule engine.','- Unknown: '+c.unknown.join(' '));
+  L.push('','## 13. Conclusion','- Primary question ("'+c.q+'"): **'+v.primary+'**','- Derived conclusions: **Supported by encoded facts and rules** ('+R.derived.length+' facts, each traceable above)','- Rules whose conditions were not met: **Not supported by available facts** ('+(R.unresolved.length?R.unresolved.map(u=>u.rule).join(', '):'none')+')','- Overall investigation status: **'+v.overall+'**','','This report covers a fictional case and a rule-based demonstration. It does not establish real-world guilt. The conclusions above show only what the encoded facts and rules support.');
+  return L.join('\n');
+}
+function mdToHtml(md){
+  const out=[];let inList=false;
+  const inl=s=>esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  md.split('\n').forEach(l=>{
+    if(/^- /.test(l)){if(!inList){out.push('<ul>');inList=true;}out.push('<li>'+inl(l.slice(2))+'</li>');return;}
+    if(inList){out.push('</ul>');inList=false;}
+    if(/^# /.test(l)) out.push('<h1>'+inl(l.slice(2))+'</h1>');
+    else if(/^## /.test(l)) out.push('<h2>'+inl(l.slice(3))+'</h2>');
+    else if(l.trim()) out.push('<p>'+inl(l)+'</p>');
+  });
+  if(inList) out.push('</ul>');
+  return out.join('');
+}
+function reportSec(c){
+  mark('report');
+  return '<div class="row noprint mb"><button class="btn pri" data-act="repCopy">'+IC('copy')+'Copy report</button><button class="btn" data-act="repPrint">'+IC('print')+'Print report</button><span class="muted" style="font-size:12.5px">Built from the current facts, rules and engine run for '+c.id+'. Temporary facts you add are included and labelled.</span></div><div class="md" id="report"><span class="tag">FICTIONAL CASE</span>'+mdToHtml(reportMD(c))+'</div>';
+}
+/* ===================== drawer / search / confirm ===================== */
+function drawerHTML(){
+  const d=S.drawer;if(!d) return '';
+  const c=C(d.c||S.caseId),R=run(c);let title='',sub='',body='';
+  const row=(l,v)=>'<dt>'+l+'</dt><dd>'+v+'</dd>';
+  if(d.type==='ev'){
+    const e=evOf(c,d.id);if(!e) return '';
+    const facts=R.facts.filter(f=>f.ev===e.id),evts=c.tl.filter(t=>t.ev===e.id);
+    title=e.title;sub='<span class="mono" style="color:var(--amber)">'+e.id+'</span> '+bd(e.ver)+bd('blue',e.cat);
+    body='<dl class="kv">'+row('Description',esc(e.desc))+row('Collected',fmtT(e.t))+row('Source',esc(e.src))+row('Reliability',bd(e.rel,e.rel))+row('Verification',bd(e.ver))+row('Related persons',e.who.length?e.who.map(w=>chipP(c,w)).join(' '):'<span class="muted">none</span>')+row('Related locations',e.loc.map(l=>'<span class="bd">'+esc(l)+'</span>').join(' '))+row('Related events',evts.length?evts.map(t=>'<span class="chip" data-act="open" data-type="tl" data-c="'+c.id+'" data-id="'+t.id+'"><span class="tt">'+fmtT(t.t)+'</span></span>').join(' '):'<span class="muted">none</span>')+'</dl>'+
+    '<div class="row"><button class="btn sm" data-act="dTL" data-id="'+e.id+'">View in Timeline</button><button class="btn sm" data-act="dSus" data-id="'+e.id+'">View Related Suspects</button><button class="btn sm '+(d.facts?'on':'')+'" data-act="dFacts">Show Logical Facts</button><button class="btn sm" data-act="dConn" data-id="'+e.id+'">Show Connections</button></div>'+
+    (d.facts?'<div><h3>Associated facts ('+facts.length+')</h3><ul class="plain">'+(facts.length?facts.map(f=>factRow(f,c)).join(''):'<li class="muted">No facts are encoded from this record.</li>')+'</ul></div>':'');
+  }else if(d.type==='st'){
+    const s=c.st.find(x=>x.id===d.id);if(!s) return '';
+    title=s.id+': '+pname(c,s.who);sub=bd('reported','Reported claim');
+    body='<p style="font-size:16px;margin:0">&ldquo;'+esc(s.text)+'&rdquo;</p><dl class="kv">'+row('Speaker',chipP(c,s.who))+row('Reported time',fmtT(s.t))+row('Context',esc(s.ctx))+row('Verification',bd(s.ver))+row('Related evidence',s.ev.length?s.ev.map(id=>chipE(c,id)).join(' '):'<span class="muted">none</span>')+'</dl><div class="muted" style="font-size:12.5px">A statement is a reported claim. It is not a verified fact until a record supports it.</div><div class="row"><button class="btn sm" data-act="dStmt" data-id="'+s.id+'">Open in Statements</button><button class="btn sm" data-act="cmpTog" data-id="'+s.id+'">Add to comparison</button></div>';
+  }else if(d.type==='tl'){
+    const e=c.tl.find(x=>x.id===d.id);if(!e) return '';
+    title=fmtT(e.t)+' '+(e.type==='gap'?'Missing information':'Event');sub='<span class="mono muted">'+e.id+'</span> '+bd(e.type==='gap'?'unknown':e.ver,e.type==='gap'?'Missing information':e.ver);
+    body='<p style="font-size:16px;margin:0">'+esc(e.d)+'</p><dl class="kv">'+row('Person',e.who?chipP(c,e.who):'<span class="muted">none recorded</span>')+row('Location',esc(e.loc||'unknown'))+row('Related evidence',chipE(c,e.ev))+row('Status',bd(e.ver))+'</dl>'+(e.conflict?'<div class="flag">'+IC('flag')+esc(e.conflict)+'</div>':'')+'<div class="row"><button class="btn sm" data-act="dConn" data-id="'+e.ev+'">Show evidence connections</button></div>';
+  }else if(d.type==='fact'){
+    const f=R.byId[d.id];if(!f) return '';
+    title=f.id+': '+f.s;sub=kindBd(f.kind)+basisNote(f.basis);
+    body='<div class="mono" style="font-size:15px">'+esc(f.s)+'</div><dl class="kv">'+row('Fact ID',f.id)+row('Type',kindBd(f.kind))+(f.ev?row('Source evidence',chipE(c,f.ev)):'')+'</dl>'+(f.rule?explainHTML(f,c,R):'')+'<div class="row"><button class="btn sm" data-act="dFactRS" data-id="'+f.id+'">'+IC('cpu')+'Open in reasoning lab</button></div>';
+  }else return '';
+  return '<div class="scrim" data-act="closeDrawer"></div><aside class="drawer" role="dialog" aria-label="Record details"><div class="dh"><div class="grow"><div class="row">'+sub+'</div><h2 style="font-family:var(--type);font-weight:400;font-size:21px;margin:6px 0 0">'+esc(title)+'</h2></div><button class="btn sm" data-act="closeDrawer" aria-label="Close">'+IC('x')+'</button></div><div class="db">'+body+'</div></aside>';
+}
+const STYPES=['All','Case','Evidence','Suspect','Statement','Timeline','Fact'];
+function quickQuery(c,s){
+  const rows=[];let label='';
+  const locq=s.qloc.trim().toLowerCase();
+  if(s.qk==='present'){
+    label='People recorded in a location matching "'+s.qloc+'"';
+    const seen={};
+    c.F.forEach(f=>{if(f.p.args.length>1&&f.p.args[0].t==='const'&&pOf(c,f.p.args[0].n)&&f.p.args.slice(1).some(a=>a.t==='const'&&a.n.toLowerCase().includes(locq))){(seen[f.p.args[0].n]=seen[f.p.args[0].n]||[]).push(f.id+' '+f.s);}});
+    c.tl.forEach(e=>{if(e.who&&e.type!=='gap'&&(e.loc||'').toLowerCase().includes(locq)) (seen[e.who]=seen[e.who]||[]).push(e.id);});
+    Object.keys(seen).forEach(id=>rows.push('<button class="hit" data-act="goSus" data-id="'+id+'" data-c="'+c.id+'"><b>'+esc(pname(c,id))+'</b><div class="muted mono" style="font-size:12px">'+esc(seen[id].slice(0,3).join(' | '))+'</div></button>'));
+  }else if(s.qk==='key'){
+    label='People holding access to "'+s.qloc+'"';
+    R_=run(c);
+    R_.facts.filter(f=>['has_key','holds_permission','cleared'].includes(f.p.f)&&f.p.args[1]&&f.p.args[1].n&&f.p.args[1].n.toLowerCase().includes(locq)).forEach(f=>rows.push('<button class="hit" data-act="open" data-type="fact" data-c="'+c.id+'" data-id="'+f.id+'"><b>'+esc(nameOf(c,f.p.args[0].n))+'</b> <span class="mono muted">'+f.id+' '+esc(f.s)+'</span> '+kindBd(f.kind)+'</button>'));
+  }else if(s.qk==='evidence'){
+    const p=pOf(c,s.qperson)||c.people[0];
+    label='Evidence associated with '+p.name;
+    c.ev.filter(e=>e.who.includes(p.id)).forEach(e=>rows.push('<button class="hit" data-act="open" data-type="ev" data-c="'+c.id+'" data-id="'+e.id+'"><span class="mono" style="color:var(--amber)">'+e.id+'</span> '+esc(e.title)+'</button>'));
+    c.st.filter(x=>x.who===p.id).forEach(x=>rows.push('<button class="hit" data-act="open" data-type="st" data-c="'+c.id+'" data-id="'+x.id+'"><span class="mono" style="color:var(--amber)">'+x.id+'</span> statement by '+esc(p.name)+'</button>'));
+  }else{
+    const a=Number(s.qfrom)||0,b=Number(s.qto)||9999;
+    label='Events between '+fmtT(a)+' and '+fmtT(b);
+    c.tl.filter(e=>e.t>=a&&e.t<=b).sort((x,y)=>x.t-y.t).forEach(e=>rows.push('<button class="hit" data-act="open" data-type="tl" data-c="'+c.id+'" data-id="'+e.id+'"><span class="tt">'+fmtT(e.t)+'</span> '+esc(e.d)+'</button>'));
+  }
+  return {label,rows};
+}
+let R_=null;
+function searchModal(){
+  const s=S.search;if(!s.open) return '';
+  const toks=tokens(s.q),c=cur();
+  let body='';
+  if(s.mode==='text'){
+    if(!toks.length) body='<div class="empty">Type to search cases, evidence, suspects, statements, timeline events and fact labels. Matches are text matches, not AI deductions.</div>';
+    else{
+      const rs=IDX.filter(r=>(s.type==='All'||r.type===s.type)&&toks.every(t=>(r.text+' '+r.title).toLowerCase().includes(t)));
+      if(!rs.length) body=empty('No results for "'+esc(s.q)+'". Try a shorter word or another type filter.');
+      else body=STYPES.slice(1).map(t=>{
+        const g=rs.filter(r=>r.type===t);if(!g.length) return '';
+        return '<div class="sg"><div class="lbl">'+t+' ('+g.length+')</div>'+g.slice(0,6).map(r=>'<button class="hit" data-act="sOpen" data-type="'+r.type+'" data-c="'+r.c+'" data-id="'+r.id+'"><div class="row"><b>'+hl(r.title,toks)+'</b><span class="sp"></span><span class="mono muted" style="font-size:11.5px">'+r.c+'</span></div><div class="muted" style="font-size:12.5px">'+snippet(r.text,toks,130)+'</div></button>').join('')+(g.length>6?'<div class="muted" style="font-size:12px;margin-top:4px">+'+(g.length-6)+' more. Narrow the search or pick a type.</div>':'')+'</div>';
+      }).join('');
+    }
+  }else{
+    const q=quickQuery(c,s);
+    body='<div class="row mb">'+sel('search.qk',['present','key','evidence','time'],s.qk,{present:'People recorded in a location',key:'People with access to a place',evidence:'Evidence for a person',time:'Events in a time range'})+(s.qk==='present'||s.qk==='key'?'<input id="in-search.qloc" data-in="search.qloc" type="text" placeholder="location or access target" value="'+esc(s.qloc)+'">':s.qk==='evidence'?sel('search.qperson',c.people.map(p=>p.id),s.qperson||c.people[0].id,Object.fromEntries(c.people.map(p=>[p.id,p.name]))):'<input id="in-search.qfrom" data-in="search.qfrom" type="text" style="width:80px" placeholder="1700" value="'+esc(s.qfrom)+'"><span class="muted">to</span><input id="in-search.qto" data-in="search.qto" type="text" style="width:80px" placeholder="2100" value="'+esc(s.qto)+'">')+'</div><div class="lbl">'+esc(q.label)+' in '+c.id+'</div>'+(q.rows.length?q.rows.join(''):empty('No records match this query.'))+'<div class="muted" style="font-size:12px;margin-top:10px">Structured lookup over the case data. This is a filter, not an AI deduction. Time values use hhmm, for example 1830.</div>';
+  }
+  return '<div class="scrim" data-act="closeSearch"></div><div class="modal" role="dialog" aria-label="Global search"><div style="padding:14px 14px 4px"><div class="row"><div class="gs" style="max-width:none;cursor:text;margin:0">'+IC('search')+'<input id="in-search.q" data-in="search.q" type="search" placeholder="Search everything (try rahul, camera, laboratory)" value="'+esc(s.q)+'" style="flex:1;background:none;border:0;padding:0" '+(s.mode==='text'?'':'disabled')+'></div><button class="btn sm" data-act="clearSearch">Clear</button><button class="btn sm" data-act="closeSearch" aria-label="Close">'+IC('x')+'</button></div><div class="row" style="margin-top:10px">'+seg('search.mode',[['text','Text search'],['quick','Quick queries']],s.mode)+(s.mode==='text'?STYPES.map(t=>'<span class="chip '+(s.type===t?'sel':'')+'" data-act="set" data-k="search.type" data-v="'+t+'">'+t+'</span>').join(''):'')+'</div></div><div class="sr">'+body+'</div></div>';
+}
+function confirmHTML(){
+  const k=S.confirm;if(!k) return '';
+  return '<div class="scrim" data-act="confirmNo"></div><div class="modal sm" role="alertdialog"><h2 class="sh" style="margin-bottom:6px">Please confirm</h2><p>'+esc(k.msg)+'</p><div class="row"><button class="btn danger" data-act="confirmYes">'+esc(k.ok)+'</button><button class="btn" data-act="confirmNo">Cancel</button></div></div>';
+}
+/* ===================== about ===================== */
+function aboutPage(){
+  return '<div class="ph"><div><h1>Settings / About</h1><p>MysteryMind is a rule-based symbolic AI demonstration. It is not a language model and it does not search the internet.</p></div></div><div class="g2"><div class="panel"><h2 class="sh">What it does</h2><p>Facts and clues are encoded as logical terms. Rules say what follows from them. A forward-chaining engine uses structural unification to match rule conditions against facts, keeps one consistent substitution across all conditions, derives new facts, and records provenance so every conclusion can be explained.</p><p class="muted">All people, places and incidents are fictional. A derived fact shows that encoded conditions were met. It never proves real-world guilt.</p></div>'+
+  '<div class="panel"><h2 class="sh">Unification, step by step</h2><ul class="plain"><li class="li">Walk both terms through the current substitution.</li><li class="li">Variable vs term: run the occurs check, then bind.</li><li class="li">Constant vs constant: they must be identical.</li><li class="li">Compound vs compound: same predicate name and arity, then unify arguments left to right, sharing one substitution.</li><li class="li">Any other pairing fails with a stated reason.</li></ul></div>'+
+  '<div class="panel"><h2 class="sh">Forward chaining</h2><ul class="plain"><li class="li">Read initial facts and rules.</li><li class="li">For each rule, unify each condition against the facts, threading the substitution through.</li><li class="li">Apply the substitution to the conclusion. Add it only if it is ground and new.</li><li class="li">Repeat until a full round adds nothing (fixpoint).</li></ul></div>'+
+  '<div class="panel"><h2 class="sh">System</h2><dl class="kv"><dt>Mode</dt><dd>DEMO MODE</dd><dt>Engine</dt><dd>LOCAL, in this page</dd><dt>Version</dt><dd>v1.0</dd><dt>Cases</dt><dd>'+CASES.length+' fictional cases</dd></dl><div class="row mt" style="margin-top:12px"><button class="btn" data-act="toggleSide">'+IC('menu')+'Collapse or expand sidebar</button><button class="btn danger" data-act="resetAllAsk">'+IC('reset')+'Reset all experiments</button></div></div></div>';
+}
+/* ===================== shell ===================== */
+const PAGE_LABEL={overview:'Overview',cases:'Case Explorer',builder:'Case Builder',room:'Investigation Room',vault:'Evidence Vault',suspects:'Suspect Dossiers',timeline:'Timeline',board:'Evidence Board',reasoning:'AI Reasoning Lab',reports:'Investigation Reports',about:'Settings / About'};
+function pageHTML(){
+  const c=cur();
+  const head=(t,s)=>'<div class="ph"><div><h1>'+t+'</h1><p>'+s+'</p></div><span class="sp"></span><span class="mono muted">'+c.id+'</span></div>';
+  switch(S.page){
+    case 'overview':return overview();
+    case 'cases':return casesPage();
+    case 'builder':return builderPage();
+    case 'room':return roomPage();
+    case 'vault':return head('Evidence Vault','Searchable evidence and witness statements for '+esc(c.title)+'.')+'<div class="mb">'+seg('vault.tab',[['evidence','Evidence'],['statements','Statements']],S.vault.tab)+'</div>'+(S.vault.tab==='evidence'?evidenceSec(c):statementsSec(c));
+    case 'suspects':return head('Suspect Dossiers','People of interest: verified facts, reported claims, derived facts, hypotheses and unknowns.')+suspects(c);
+    case 'timeline':return head('Timeline','Events in order, with conflicts and missing information shown where the record supports them.')+timelineSec(c);
+    case 'board':return head('Evidence Board','Connections between people, evidence, locations, statements, events, facts, rules and derived conclusions.')+boardSec(c);
+    case 'reasoning':return head('AI Reasoning Lab','Run unification and forward chaining on this case, or experiment in the custom lab.')+reasoningSec(c);
+    case 'reports':return head('Investigation Reports','A report generated from the current facts, rules and engine run.')+reportSec(c);
+    case 'about':return aboutPage();
+  }
+  return '';
+}
+function shell(){
+  const c=cur();
+  const nav=NAV.map(([id,l,ic])=>'<button class="'+(S.page===id?'on':'')+'" data-act="nav" data-p="'+id+'" title="'+l+'">'+IC(ic)+'<span>'+l+'</span></button>').join('');
+  return '<div class="app"><aside class="side '+(S.collapsed?'col':'')+'"><div class="logo"><div class="logo-mark">'+IC('room')+'</div><div><div class="logo-t">MysteryMind</div><div class="logo-s">AI Logic Detective</div></div></div><nav class="nav">'+nav+'</nav><div class="sfoot"><div><span class="dot"></span><b>DEMO MODE</b></div><div>Reasoning engine: <b>LOCAL</b></div><div>Case: <b class="mono">'+c.id+'</b></div><div>Version v1.0</div></div></aside>'+
+  '<div class="main"><header class="top"><button class="btn sm" data-act="toggleSide" aria-label="Toggle sidebar">'+IC('menu')+'</button><div class="crumb">MysteryMind / <b>'+PAGE_LABEL[S.page]+'</b>'+(['overview','cases','about','builder'].includes(S.page)?'':' / '+c.id)+'</div><button class="gs" data-act="openSearch">'+IC('search')+'<span class="t">Search cases, evidence, suspects, statements</span><span class="kbd">Ctrl K</span></button>'+sel('caseId',CASES.map(x=>x.id),S.caseId,Object.fromEntries(CASES.map(x=>[x.id,x.id+': '+x.title])))+'<div class="avatar" title="Inspector Nova (fictional investigator)">IN</div></header><main class="content" id="content">'+pageHTML()+'</main></div></div>'+
+  drawerHTML()+searchModal()+confirmHTML()+(S.toastMsg?'<div class="toast" role="status">'+esc(S.toastMsg)+'</div>':'');
+}
+function render(reset){
+  const act=document.activeElement,fid=act&&act.id,ss=act&&act.selectionStart,se=act&&act.selectionEnd;
+  const sc=$('#content'),st=sc?sc.scrollTop:0;
+  const root=$('#app');
+  root.innerHTML=shell();
+  const n=$('#content');if(n) n.scrollTop=reset?0:st;
+  if(fid){const e=document.getElementById(fid);if(e){e.focus();try{if(ss!=null) e.setSelectionRange(ss,se);}catch(_){}}}
+  if(S.search.open&&S.search.focus){const e=document.getElementById('in-search.q');if(e) e.focus();S.search.focus=false;}
+  if($('#boardsvg')&&!S.board.vb) fitBoard();
+  const tr=$('#trace');
+  if(tr){const cu=tr.querySelector('.ev.cur');if(cu) tr.scrollTop=Math.max(0,cu.offsetTop-tr.clientHeight/2);}
+}
+/* ===================== actions ===================== */
+function go(page,reset){S.page=page;S.drawer=null;render(reset!==false);}
+function caseChanged(){
+  S.sus=null;S.board.sel=null;S.board.vb=null;S.board.q='';S.drawer=null;S.st.cmp=[];S.st.who='All';
+  S.tlf.who='All';S.tlf.loc='All';S.tlf.from='All';S.tlf.to='All';S.tlf.q='';S.vault.q='';
+}
+function setKey(key,val){
+  const p=key.split('.');
+  if(p.length===1){S[key]=val;if(key==='caseId') caseChanged();return;}
+  const t=p[0]==='rs'?RS():S[p[0]];
+  t[p[1]]=val;
+  if(p[0]==='search'&&p[1]==='mode') S.search.focus=true;
+}
+function resetAll(){
+  Object.keys(RSS).forEach(k=>delete RSS[k]);
+  S.lab.facts=['has_key(amit, lab)','present(amit, lab)'];S.lab.rules='R1: IF has_key(X, lab) AND present(X, lab) THEN can_access(X, lab)\nR2: IF can_access(X, lab) AND present(X, lab) THEN could_enter(X, lab)';S.lab.run=null;S.lab.res=null;S.lab.rerr=[];S.lab.ferr='';
+  S.done={};caseChanged();log('Reset','All experiments and progress were reset.');
+}
+function tryExample(c){
+  const rs=RS(c.id),R=run(c),i=R.events.findIndex(e=>e.k==='derive');
+  rs.idx=i<0?R.events.length:i+1;rs.selDer=i<0?null:R.events[i].fact;rs.showSub=true;
+  log('Reasoning','Example run on '+c.id+': first derivation at step '+rs.idx+'.');
+}
+function openRecord(type,cid,id){
+  if(type==='Case'){S.caseId=cid;caseChanged();S.page='room';S.tab='overview';}
+  else if(type==='Suspect'){S.caseId=cid;caseChanged();S.sus=id;S.page='suspects';}
+  else if(type==='Evidence'){S.caseId=cid;caseChanged();S.page='vault';S.vault.tab='evidence';S.drawer={type:'ev',c:cid,id,facts:false};}
+  else if(type==='Statement'){S.caseId=cid;caseChanged();S.page='vault';S.vault.tab='statements';S.drawer={type:'st',c:cid,id};}
+  else if(type==='Timeline'){S.caseId=cid;caseChanged();S.page='timeline';S.drawer={type:'tl',c:cid,id};}
+  else if(type==='Fact'){S.caseId=cid;caseChanged();S.page='reasoning';S.rtab='case';const rs=RS(cid);rs.selFact=id;S.drawer={type:'fact',c:cid,id};}
+}
+const DTYPE={ev:'Evidence',st:'Statement',tl:'Timeline',fact:'Fact'};
+function handle(act,d,el,e){
+  const c=cur(),rs=RS();
+  switch(act){
+    case 'nav':if(d.p==='reasoning'&&S.page!=='reasoning') S.rtab='case';go(d.p);return;
+    case 'toggleSide':S.collapsed=!S.collapsed;break;
+    case 'openCase':S.caseId=d.id;caseChanged();S.page='room';S.tab='overview';log('Case','Opened '+d.id+'.');render(true);return;
+    case 'openReason':S.caseId=d.id;caseChanged();S.page='reasoning';S.rtab='case';render(true);return;
+    case 'demo':S.caseId='CASE-001';caseChanged();S.page='reasoning';S.rtab='case';tryExample(C('CASE-001'));render(true);return;
+    case 'labOpen':S.page='reasoning';S.rtab='lab';render(true);return;
+    case 'tab':S.tab=d.t;render(true);return;
+    case 'set':setKey(d.k,d.v);if(d.k==='rtab'&&d.v==='lab') S.rtab='lab';break;
+    case 'tog':{const p=d.k.split('.');const t=p[0]==='rs'?rs:S[p[0]];t[p[1]]=!t[p[1]];break;}
+    case 'clearCF':S.cf=Object.assign(S.cf,{q:'',cat:'All',diff:'All',status:'All',sort:'id'});break;
+    case 'clearVault':Object.assign(S.vault,{q:'',cat:'All',ver:'All',sort:'id'});break;
+    case 'clearTL':Object.assign(S.tlf,{q:'',who:'All',loc:'All',from:'All',to:'All',rev:'no'});break;
+    case 'clearCmp':S.st.cmp=[];break;
+    case 'cmpTog':{const a=S.st.cmp,i=a.indexOf(d.id);if(i>=0) a.splice(i,1);else{a.push(d.id);if(a.length>2) a.shift();}if(S.drawer&&S.drawer.type==='st'){S.drawer=null;S.page='vault';S.vault.tab='statements';}break;}
+    case 'selSus':S.sus=d.id;break;
+    case 'goSus':S.caseId=d.c||S.caseId;if(d.c&&d.c!==S.caseId) caseChanged();S.sus=d.id;S.search.open=false;S.drawer=null;S.page='suspects';render(true);return;
+    case 'open':S.drawer={type:d.type,c:d.c||S.caseId,id:d.id,facts:false};break;
+    case 'closeDrawer':S.drawer=null;break;
+    case 'dFacts':S.drawer.facts=!S.drawer.facts;break;
+    case 'dTL':S.tlf.q=d.id;S.drawer=null;S.page='timeline';render(true);return;
+    case 'dSus':{const ev=evOf(c,d.id);S.drawer=null;if(ev&&ev.who.length){S.sus=ev.who[0];S.page='suspects';}else toast('No persons are linked to this record');render(true);return;}
+    case 'dConn':S.drawer=null;S.board.q='';S.board.sel='e:'+d.id;S.board.vb=null;S.page='board';render(true);return;
+    case 'dStmt':S.drawer=null;S.page='vault';S.vault.tab='statements';S.st.q=d.id;render(true);return;
+    case 'dFactRS':{S.drawer=null;S.page='reasoning';S.rtab='case';rs.selFact=d.id;render(true);return;}
+    case 'openSearch':S.search.open=true;S.search.focus=true;break;
+    case 'closeSearch':S.search.open=false;break;
+    case 'clearSearch':S.search.q='';S.search.focus=true;break;
+    case 'sOpen':S.search.open=false;openRecord(d.type,d.c,d.id);render(true);return;
+    case 'bSel':S.board.sel=d.id;break;
+    case 'bClear':S.board.sel=null;break;
+    case 'bType':S.board.hide[d.t]=!S.board.hide[d.t];S.board.vb=null;break;
+    case 'bFit':S.board.vb=null;break;
+    case 'bReset':S.board.vb=null;S.board.sel=null;S.board.q='';S.board.hide={};break;
+    case 'bZoom':{const v=S.board.vb;if(v){const f=d.v==='in'?1/1.25:1.25,cx=v.x+v.w/2,cy=v.y+v.h/2;v.w*=f;v.h*=f;v.x=cx-v.w/2;v.y=cy-v.h/2;const svg=$('#boardsvg');if(svg) svg.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);}return;}
+    case 'bOpen':{
+      const k=d.id[0],ref=d.id.slice(2);
+      if(k==='p'){S.sus=ref;S.page='suspects';}
+      else if(k==='e') S.drawer={type:'ev',c:c.id,id:ref,facts:false};
+      else if(k==='s') S.drawer={type:'st',c:c.id,id:ref};
+      else if(k==='t') S.drawer={type:'tl',c:c.id,id:ref};
+      else if(k==='f'||k==='d') S.drawer={type:'fact',c:c.id,id:ref};
+      else if(k==='r'){S.page='reasoning';S.rtab='case';rs.showRules=true;rs.hlRule=ref;}
+      else if(k==='l'){S.tlf.loc=ref;S.page='timeline';}
+      render(true);return;}
+    case 'rsRun':rs.idx=run(c).events.length;{const R=run(c),dv=R.derived;if(dv.length&&!rs.selDer) rs.selDer=dv[0].id;}log('Reasoning','Ran forward chaining on '+c.id+': '+run(c).derived.length+' facts derived.');break;
+    case 'rsStep':rs.idx=rs.idx>=run(c).events.length||rs.idx===0?1:rs.idx+1;break;
+    case 'rsNext':rs.idx=Math.min(rs.idx+1,run(c).events.length);break;
+    case 'rsPrev':rs.idx=Math.max(0,rs.idx-1);break;
+    case 'rsReset':rs.idx=0;rs.selDer=null;rs.selFact=null;break;
+    case 'rsExample':tryExample(c);break;
+    case 'rsSelFact':if(d.id){rs.selFact=d.id;const f=run(c).byId[d.id];if(f&&f.kind==='derived') rs.selDer=d.id;}break;
+    case 'rsSelDer':rs.selDer=d.id;rs.selFact=d.id;break;
+    case 'rsShowRule':rs.showRules=true;rs.hlRule=d.id;break;
+    case 'rsAdd':{
+      rs.err='';
+      try{
+        const t=parseTerm(rs.inp.trim());
+        if(t.t!=='cmp') throw new Error('A fact must be a predicate such as present(amit, lab).');
+        if(hasVar(t)) throw new Error('Facts must be ground. Replace the variables ('+termVars(t).join(', ')+') with constants.');
+        const k=toStr(t);
+        if(run(c).facts.some(f=>toStr(f.p)===k)) throw new Error(k+' is already in the knowledge base.');
+        rs.temp.push(k);rs.inp='';rs.idx=0;rs.selDer=null;log('Reasoning','Added temporary fact '+k+' to '+c.id+'.');
+      }catch(err){rs.err=err.message;}
+      break;}
+    case 'rsDel':{const i=Number(d.id.slice(1))-1;if(rs.temp[i]!==undefined){log('Reasoning','Removed temporary fact '+rs.temp[i]+'.');rs.temp.splice(i,1);rs.idx=0;rs.selDer=null;rs.selFact=null;}break;}
+    case 'rsResetTemp':if(e) e.preventDefault();S.confirm={msg:'Remove all '+rs.temp.length+' temporary facts from '+c.id+'? The seeded facts stay.',ok:'Remove them',act:'rsClearTemp'};break;
+    case 'labUnify':labUnify();break;
+    case 'labSample':
+      if(d.v==='multi'){S.lab.facts=['has_key(amit, lab)','present(amit, lab)'];S.lab.rules='R1: IF has_key(X, lab) AND present(X, lab) THEN can_access(X, lab)\nR2: IF can_access(X, lab) AND present(X, lab) THEN could_enter(X, lab)';S.lab.ferr='';labRun();}
+      else{S.lab.a=SAMPLES[d.v][0];S.lab.b=SAMPLES[d.v][1];labUnify();}
+      break;
+    case 'labAddFact':{
+      S.lab.ferr='';
+      try{
+        const t=parseTerm(S.lab.factIn.trim());
+        if(t.t!=='cmp') throw new Error('A fact must be a predicate such as present(amit, lab).');
+        if(hasVar(t)) throw new Error('Facts must be ground (no variables).');
+        const k=toStr(t);if(S.lab.facts.includes(k)) throw new Error('That fact is already in the list.');
+        S.lab.facts.push(k);S.lab.factIn='';S.lab.run=null;
+      }catch(err){S.lab.ferr=err.message;}
+      break;}
+    case 'labDelFact':S.lab.facts.splice(Number(d.i),1);S.lab.run=null;break;
+    case 'labRun':labRun();break;
+    case 'labResetAsk':S.confirm={msg:'Reset the custom lab? Your facts, rules and results will return to the starting example.',ok:'Reset experiment',act:'labReset'};break;
+    case 'resetAllAsk':S.confirm={msg:'Reset all temporary facts, reasoning progress and lab experiments?',ok:'Reset all',act:'resetAll'};break;
+    case 'confirmNo':S.confirm=null;break;
+    case 'confirmYes':{
+      const a=S.confirm.act;S.confirm_id=S.confirm.id;S.confirm=null;
+      if(a==='rsClearTemp'){rs.temp=[];rs.idx=0;rs.selDer=null;rs.selFact=null;log('Reasoning','Cleared temporary facts on '+c.id+'.');}
+      else if(a==='labReset'){S.lab.facts=['has_key(amit, lab)','present(amit, lab)'];S.lab.rules='R1: IF has_key(X, lab) AND present(X, lab) THEN can_access(X, lab)\nR2: IF can_access(X, lab) AND present(X, lab) THEN could_enter(X, lab)';S.lab.run=null;S.lab.res=null;S.lab.err='';S.lab.rerr=[];S.lab.ferr='';S.lab.a='has_key(X, lab)';S.lab.b='has_key(amit, lab)';}
+      else if(a==='resetAll') resetAll();
+      else if(a==='draftClear') S.draft=newDraft();
+      else if(a==='deleteCase'){deleteCase(S.confirm_id);}
+      render();toast('Reset complete');return;}
+    case 'dAddPerson':case 'dDelPerson':case 'dEvWho':case 'dAddEv':case 'dDelEv':case 'dAddFact':case 'dDelFact':case 'dAddSt':case 'dDelSt':case 'dAddTl':case 'dDelTl':draftAct(act,d);break;
+    case 'dExample':loadExample();toast('Example loaded. Review it, then create the case.');return;
+    case 'dClearAsk':S.confirm={msg:'Clear everything you typed in the Case Builder form?',ok:'Clear form',act:'draftClear'};break;
+    case 'dCreate':if(createCase()){render(true);toast('Case created');return;}render();return;
+    case 'deleteCaseAsk':S.confirm={msg:'Delete this case? Your entered facts, rules and evidence for it will be removed.',ok:'Delete case',act:'deleteCase',id:d.id};break;
+    case 'repCopy':copyText(reportMD(c));return;
+    case 'repPrint':try{window.print();}catch(_){toast('Printing is not available here. Use Copy report.');}return;
+  }
+  render();
+}
+/* ===================== case builder ===================== */
+function newDraft(){return {title:'',cat:'Theft',diff:'Medium',loc:'',when:'',desc:'',brief:'',obj:'',q:'',people:[],ev:[],facts:[],st:[],tl:[],rules:'',open:'',keyp:'',confp:'',evN:0,
+  pName:'',pRole:'',pBg:'',pWhere:'',pAccess:'',
+  eTitle:'',eDesc:'',eCat:'Document',eRel:'High',eVer:'Verified',eLoc:'',eTime:'1200',eWho:[],
+  fTerm:'',fEv:'',fKind:'v',
+  sWho:'',sText:'',sTime:'1200',sEv:'',
+  tTime:'1200',tDesc:'',tWho:'',tLoc:'',tEv:'',tVer:'Verified',tConf:'',
+  err:{},errs:[]};}
+S.draft=newDraft();
+const BUILD_CATS=['Theft','Tampering','Digital','Facility','Exhibit','Other'];
+const BUILD_EVCATS=EV_CATS.slice(1);
+function draftEvLabels(D){return Object.fromEntries(D.ev.map(e=>[e.id,e.id+': '+e.title]));}
+function fld(label,key,ph,wide){
+  return '<label style="display:block"><div class="lbl">'+label+'</div><input id="in-draft.'+key+'" data-in="draft.'+key+'" type="text" style="width:100%" placeholder="'+esc(ph||'')+'" value="'+esc(S.draft[key])+'"></label>';
+}
+function area(label,key,ph,rows){
+  return '<label style="display:block"><div class="lbl">'+label+'</div><textarea id="in-draft.'+key+'" data-in="draft.'+key+'" rows="'+(rows||3)+'" style="font-family:var(--ui);font-size:14px" placeholder="'+esc(ph||'')+'">'+esc(S.draft[key])+'</textarea></label>';
+}
+function dErr(k){return S.draft.err[k]?'<div class="err">'+esc(S.draft.err[k])+'</div>':'';}
+function builderPage(){
+  const D=S.draft,pOpts=['']. concat(D.people.map(p=>p.id)),pLab=Object.assign({'':'(nobody)'},Object.fromEntries(D.people.map(p=>[p.id,p.name+' ('+p.id+')'])));
+  const evOpts=[''].concat(D.ev.map(e=>e.id)),evLab=Object.assign({'':'(no evidence link)'},draftEvLabels(D));
+  const sec=(n,t,help,inner)=>'<div class="panel"><h2 class="sh">'+n+'. '+t+'</h2>'+(help?'<p class="muted" style="margin:0 0 12px;font-size:13px">'+help+'</p>':'')+inner+'</div>';
+  const list=(items)=>items.length?'<ul class="plain" style="margin-bottom:12px">'+items.join('')+'</ul>':'<div class="muted" style="font-size:12.5px;margin-bottom:12px">Nothing added yet.</div>';
+  const rm=(act,i)=>'<button class="btn sm danger" data-act="'+act+'" data-i="'+i+'" aria-label="Remove">'+IC('x')+'</button>';
+  const basics=sec(1,'Case basics','The title and at least one person, one fact and one rule are required. Everything else is optional but makes the report richer.',
+    '<div class="g2">'+fld('Case title *','title','e.g. The Missing Canteen Cash Box')+fld('Location','loc','e.g. College Canteen')+'<div><div class="lbl">Category</div>'+sel('draft.cat',BUILD_CATS,D.cat)+'</div><div><div class="lbl">Difficulty</div>'+sel('draft.diff',['Easy','Medium','Hard'],D.diff)+'</div>'+fld('When it happened','when','e.g. Fri 7 Aug, 16:00 to 17:30')+fld('Main question','q','e.g. Who took the cash box?')+'</div><div class="g2 mt" style="margin-top:12px">'+area('Short description','desc','One line for the case card')+area('Briefing','brief','What happened?')+'</div><div style="margin-top:12px">'+area('Investigation objective','obj','What should the investigation establish?',2)+'</div>');
+  const people=sec(2,'People of interest','Each person gets a lowercase ID automatically. Use that ID as the constant in your facts, for example has_key(meera, cashbox).',
+    list(D.people.map((p,i)=>'<li class="li"><div class="row"><b>'+esc(p.name)+'</b><span class="muted">'+esc(p.role)+'</span><span class="sp"></span><span class="sub">id: '+p.id+'</span>'+rm('dDelPerson',i)+'</div></li>'))+
+    '<div class="g3">'+fld('Name *','pName','Meera Shah')+fld('Role','pRole','Canteen Manager')+fld('Access / permissions','pAccess','Holds the cash box key')+'</div><div class="g2" style="margin-top:10px">'+fld('Background','pBg','Short background')+fld('Recorded whereabouts','pWhere','Where were they recorded?')+'</div><div class="row" style="margin-top:10px"><button class="btn" data-act="dAddPerson">'+IC('plus')+'Add person</button></div>'+dErr('person'));
+  const evid=sec(3,'Evidence records','Evidence supports facts. Click people below to link them to the record you are adding.',
+    list(D.ev.map((e,i)=>'<li class="li"><div class="row"><span class="mono" style="color:var(--amber)">'+e.id+'</span><b>'+esc(e.title)+'</b>'+bd(e.ver)+'<span class="sp"></span>'+rm('dDelEv',i)+'</div></li>'))+
+    '<div class="g3">'+fld('Title *','eTitle','Key Register')+'<div><div class="lbl">Category</div>'+sel('draft.eCat',BUILD_EVCATS,D.eCat)+'</div>'+fld('Location','eLoc','College Canteen')+'<div><div class="lbl">Reliability</div>'+sel('draft.eRel',['High','Medium','Low'],D.eRel)+'</div><div><div class="lbl">Verification</div>'+sel('draft.eVer',['Verified','Reported','Unverified'],D.eVer)+'</div>'+fld('Collection time (hhmm)','eTime','1200')+'</div><div style="margin-top:10px">'+fld('Description','eDesc','What does this record say?')+'</div><div class="row" style="margin-top:10px"><span class="muted" style="font-size:12.5px">Related people:</span>'+(D.people.length?D.people.map(p=>'<span class="chip '+(D.eWho.includes(p.id)?'sel':'')+'" data-act="dEvWho" data-id="'+p.id+'">'+esc(p.name)+'</span>').join(''):'<span class="muted" style="font-size:12.5px">add people first</span>')+'</div><div class="row" style="margin-top:10px"><button class="btn" data-act="dAddEv">'+IC('plus')+'Add evidence</button></div>'+dErr('ev'));
+  const facts=sec(4,'Logical facts','Write each fact as a predicate with lowercase constants, for example present(meera, canteen) or box_last_seen(1640). Times use hhmm numbers so the lt() check works. Facts must contain no variables.',
+    list(D.facts.map((f,i)=>'<li class="li '+(f.kind==='r'?'r':'v')+'"><div class="row"><span class="mono">'+esc(f.term)+'</span>'+(f.ev?'<span class="chip mono">'+f.ev+'</span>':'')+bd(f.kind==='r'?'reported':'verified',f.kind==='r'?'Reported':'Verified')+'<span class="sp"></span>'+rm('dDelFact',i)+'</div></li>'))+
+    '<div class="row"><input id="in-draft.fTerm" data-in="draft.fTerm" type="text" class="grow mono" placeholder="present(meera, canteen)" value="'+esc(D.fTerm)+'">'+sel('draft.fEv',evOpts,D.fEv,evLab)+sel('draft.fKind',['v','r'],D.fKind,{v:'Verified record',r:'Reported claim'})+'<button class="btn" data-act="dAddFact">'+IC('plus')+'Add fact</button></div>'+dErr('fact'));
+  const rules=sec(5,'Rules','One rule per line: R1: IF has_key(X, cashbox) AND present(X, canteen) THEN can_open(X, cashbox). Variables start with a capital letter. Built-in checks: neq(A, B), lt(A, B).',
+    '<textarea id="in-draft.rules" data-in="draft.rules" rows="5" spellcheck="false" placeholder="R1: IF a(X) AND b(X) THEN c(X)">'+esc(D.rules)+'</textarea><div class="g2" style="margin-top:10px">'+fld('Key conclusion predicates (optional, comma separated)','keyp','opportunity')+fld('Conflict predicates (optional, comma separated)','confp','conflicting_departure')+'</div>');
+  const stm=sec(6,'Statements (optional)','Statements are stored as reported claims, not verified facts.',
+    list(D.st.map((s,i)=>'<li class="li r"><div class="row"><b>'+esc(pname({people:D.people},s.who))+'</b><span class="muted">'+esc(s.text.slice(0,70))+'</span><span class="sp"></span>'+rm('dDelSt',i)+'</div></li>'))+
+    '<div class="g3">'+'<div><div class="lbl">Speaker</div>'+sel('draft.sWho',pOpts,D.sWho,pLab)+'</div>'+fld('Stated time (hhmm)','sTime','1725')+'<div><div class="lbl">Related evidence</div>'+sel('draft.sEv',evOpts,D.sEv,evLab)+'</div></div><div style="margin-top:10px">'+area('Statement text','sText','What did they say?',2)+'</div><div class="row" style="margin-top:10px"><button class="btn" data-act="dAddSt">'+IC('plus')+'Add statement</button></div>'+dErr('st'));
+  const tl=sec(7,'Timeline events (optional)','Add a conflict note only when your records really disagree.',
+    list(D.tl.slice().sort((a,b)=>a.t-b.t).map(e=>'<li class="li"><div class="row"><span class="tt">'+fmtT(e.t)+'</span><span>'+esc(e.d)+'</span><span class="sp"></span>'+rm('dDelTl',D.tl.indexOf(e))+'</div></li>'))+
+    '<div class="g3">'+fld('Time (hhmm)','tTime','1640')+'<div><div class="lbl">Person</div>'+sel('draft.tWho',pOpts,D.tWho,pLab)+'</div>'+fld('Location','tLoc','College Canteen')+'<div><div class="lbl">Related evidence</div>'+sel('draft.tEv',evOpts,D.tEv,evLab)+'</div><div><div class="lbl">Status</div>'+sel('draft.tVer',['Verified','Reported','Unknown'],D.tVer)+'</div>'+fld('Conflict note (optional)','tConf','Differs from the logged exit time')+'</div><div style="margin-top:10px">'+fld('What happened','tDesc','Cash box seen on the shelf')+'</div><div class="row" style="margin-top:10px"><button class="btn" data-act="dAddTl">'+IC('plus')+'Add event</button></div>'+dErr('tl'));
+  const open=sec(8,'Unresolved questions (optional)','One per line.',area('','open','Who else could reach the cash box without a key?',3));
+  return '<div class="ph"><div><h1>Case Builder</h1><p>Create your own case. Add people, evidence, facts and rules, and MysteryMind will run real unification and forward chaining on them. Your cases are saved in this browser.</p></div><span class="sp"></span><button class="btn" data-act="dExample">Fill with an example</button><button class="btn danger" data-act="dClearAsk">'+IC('reset')+'Clear form</button></div>'+
+  '<div style="display:grid;gap:14px">'+basics+people+evid+facts+rules+stm+tl+open+
+  '<div class="panel"><div class="row"><button class="btn pri" data-act="dCreate">'+IC('room')+'Create case and open it</button><span class="muted" style="font-size:12.5px">Required: title, one person, one fact, one rule.</span></div>'+(D.errs.length?'<ul class="plain mt" style="margin-top:12px">'+D.errs.map(e=>'<li class="li u">'+esc(e)+'</li>').join('')+'</ul>':'')+'</div></div>';
+}
+function dTime(v,label){
+  if(!/^\d{3,4}$/.test(String(v).trim())) throw new Error(label+' must be a number like 1640 (hhmm).');
+  const n=Number(v),h=Math.floor(n/100),m=n%100;
+  if(m>59||h>33) throw new Error(label+' is not a valid time.');
+  return n;
+}
+function dFactTerm(str){
+  const t=parseTerm(str.trim());
+  if(t.t!=='cmp') throw new Error('A fact must be a predicate such as present(meera, canteen).');
+  if(hasVar(t)) throw new Error('Facts must be ground. Replace the variables ('+termVars(t).join(', ')+') with lowercase constants.');
+  return toStr(t);
+}
+function draftAct(act,d){
+  const D=S.draft;D.err={};
+  try{
+    if(act==='dAddPerson'){
+      const name=D.pName.trim();if(!name) throw new Error('A name is required.');
+      let base=(name.split(/\s+/)[0]||'p').toLowerCase().replace(/[^a-z0-9]/g,'')||'p',id=base,n=2;
+      if(/^\d/.test(id)) id='p'+id;
+      while(D.people.some(p=>p.id===id)){id=base+n;n++;}
+      D.people.push({id,name,role:D.pRole.trim()||'Person of interest',bg:D.pBg.trim()||'Not provided.',where:D.pWhere.trim()||'Not provided.',access:D.pAccess.trim()||'Not provided.',unk:['Further details are not recorded.']});
+      D.pName=D.pRole=D.pBg=D.pWhere=D.pAccess='';
+    }else if(act==='dDelPerson'){
+      const p=D.people[Number(d.i)];if(!p) return;
+      D.people.splice(Number(d.i),1);
+      D.ev.forEach(e=>{e.who=e.who.filter(x=>x!==p.id);});D.st=D.st.filter(s=>s.who!==p.id);D.tl.forEach(e=>{if(e.who===p.id) e.who='';});
+    }else if(act==='dEvWho'){
+      const i=D.eWho.indexOf(d.id);if(i>=0) D.eWho.splice(i,1);else D.eWho.push(d.id);
+    }else if(act==='dAddEv'){
+      if(!D.eTitle.trim()) throw new Error('Evidence needs a title.');
+      const t=dTime(D.eTime,'Collection time');
+      D.evN++;
+      D.ev.push({id:'E'+D.evN,title:D.eTitle.trim(),desc:D.eDesc.trim()||'No description provided.',cat:D.eCat,t,src:'Entered by investigator',rel:D.eRel,ver:D.eVer,who:D.eWho.slice(),loc:D.eLoc.trim()?[D.eLoc.trim()]:[]});
+      D.eTitle=D.eDesc='';D.eWho=[];
+    }else if(act==='dDelEv'){
+      const e=D.ev[Number(d.i)];if(!e) return;
+      D.ev.splice(Number(d.i),1);D.facts.forEach(f=>{if(f.ev===e.id) f.ev='';});D.st.forEach(s=>{if(s.ev===e.id) s.ev='';});D.tl.forEach(x=>{if(x.ev===e.id) x.ev='';});
+    }else if(act==='dAddFact'){
+      const k=dFactTerm(D.fTerm);
+      if(D.facts.some(f=>f.term===k)) throw new Error('That fact is already in the list.');
+      D.facts.push({term:k,ev:D.fEv,kind:D.fKind});D.fTerm='';
+    }else if(act==='dDelFact') D.facts.splice(Number(d.i),1);
+    else if(act==='dAddSt'){
+      if(!D.sWho) throw new Error('Choose who made the statement.');
+      if(!D.sText.trim()) throw new Error('Write the statement text.');
+      D.st.push({who:D.sWho,text:D.sText.trim(),t:dTime(D.sTime,'Stated time'),ev:D.sEv});D.sText='';
+    }else if(act==='dDelSt') D.st.splice(Number(d.i),1);
+    else if(act==='dAddTl'){
+      if(!D.tDesc.trim()) throw new Error('Describe what happened.');
+      D.tl.push({t:dTime(D.tTime,'Event time'),d:D.tDesc.trim(),who:D.tWho,loc:D.tLoc.trim(),ev:D.tEv,ver:D.tVer,conflict:D.tConf.trim()});D.tDesc=D.tConf='';
+    }else if(act==='dDelTl') D.tl.splice(Number(d.i),1);
+  }catch(e){
+    const k={dAddPerson:'person',dAddEv:'ev',dAddFact:'fact',dAddSt:'st',dAddTl:'tl'}[act];D.err[k||'ev']=e.message;
+  }
+}
+function csvPreds(s){return String(s||'').split(',').map(x=>x.trim()).filter(Boolean);}
+function createCase(){
+  const D=S.draft,errs=[];
+  if(!D.title.trim()) errs.push('Give the case a title.');
+  if(!D.people.length) errs.push('Add at least one person of interest.');
+  if(!D.facts.length) errs.push('Add at least one fact.');
+  const rules=[];
+  D.rules.split('\n').forEach((ln,i)=>{
+    if(!ln.trim()||ln.trim()[0]==='#') return;
+    try{const r=parseRuleLine(ln);if(rules.some(x=>x.id===r.id)) errs.push('Rule line '+(i+1)+': the ID '+r.id+' is used twice.');else rules.push(r);}
+    catch(e){errs.push('Rule line '+(i+1)+': '+e.message);}
+  });
+  if(!rules.length&&!errs.some(x=>x.startsWith('Rule line'))) errs.push('Add at least one rule.');
+  D.errs=errs;
+  if(errs.length) return false;
+  let u=1;CASES.forEach(c=>{const m=/^CASE-U(\d+)$/.exec(c.id);if(m) u=Math.max(u,Number(m[1])+1);});
+  const id='CASE-U'+pad(u,2),map={};
+  D.ev.forEach((e,i)=>{map[e.id]='EV-U'+u+'-'+(i+1);});
+  const lastConcl=parseTerm(rules[rules.length-1].then).f;
+  const kp=csvPreds(D.keyp),cp=csvPreds(D.confp);
+  const c={id,n:'U'+u,title:D.title.trim(),cat:D.cat,diff:D.diff,status:'Active',icon:'file',hue:hueOf(D.title),custom:true,
+    kw:[D.cat,'custom'],desc:D.desc.trim()||'A case entered by the investigator.',brief:D.brief.trim()||D.desc.trim()||'No briefing was entered for this case.',
+    obj:D.obj.trim()||'Determine what the encoded facts and rules support.',q:D.q.trim()||'What do the encoded facts support?',
+    loc:D.loc.trim()||'Not specified',when:D.when.trim()||'Not specified',
+    people:D.people.map(p=>Object.assign({},p)),
+    ev:D.ev.map(e=>Object.assign({},e,{id:map[e.id]})),
+    st:D.st.map((s,i)=>({id:'ST-U'+u+'-'+(i+1),who:s.who,text:s.text,t:s.t,ctx:'Entered by investigator',ev:s.ev&&map[s.ev]?[map[s.ev]]:[],ver:'Reported'})),
+    tl:D.tl.map(e=>{const o={t:e.t,d:e.d,who:e.who,loc:e.loc,ev:e.ev&&map[e.ev]?map[e.ev]:'',ver:e.ver};if(e.conflict) o.conflict=e.conflict;return o;}),
+    facts:D.facts.map(f=>[f.term,f.ev&&map[f.ev]?map[f.ev]:'',f.kind]),
+    rules,open:D.open.split('\n').map(x=>x.trim()).filter(Boolean),hyp:[],unknown:['Anything not recorded in the entered facts.'],
+    limits:['This case was entered by the investigator. The engine only knows the facts and rules that were entered.','Reported claims are not verified facts.','Derived facts show that encoded conditions were met. They do not prove what actually happened.'],
+    conflictPreds:cp,keyPreds:kp.length?kp:[lastConcl]};
+  CUSTOM_RAW.push(JSON.parse(JSON.stringify(c)));saveCustom();
+  CASES.push(c);prepCase(c);
+  S.caseId=c.id;caseChanged();S.page='room';S.tab='overview';S.draft=newDraft();
+  log('Case Builder','Created '+c.id+': '+c.title+' ('+c.F.length+' facts, '+BASE[c.id].derived.length+' derived).');
+  return true;
+}
+function deleteCase(id){
+  const i=CASES.findIndex(c=>c.id===id);if(i<0||!CASES[i].custom) return;
+  CASES.splice(i,1);const j=CUSTOM_RAW.findIndex(c=>c.id===id);if(j>=0) CUSTOM_RAW.splice(j,1);saveCustom();
+  delete BASE[id];delete BLOB[id];delete RSS[id];
+  for(let k=IDX.length-1;k>=0;k--) if(IDX[k].c===id) IDX.splice(k,1);
+  Object.keys(RUNS).forEach(k=>{if(k.indexOf(id+'|')===0) delete RUNS[k];});
+  if(S.caseId===id) S.caseId='CASE-001';
+  caseChanged();S.page='cases';log('Case Builder','Deleted '+id+'.');
+}
+function loadExample(){
+  const D=newDraft();
+  Object.assign(D,{title:'The Missing Canteen Cash Box',cat:'Theft',diff:'Easy',loc:'College Canteen',when:'Fri 7 Aug, 16:00 to 17:30',q:'Who took the cash box?',
+   desc:'The afternoon cash box disappears from the canteen counter shelf.',brief:'The cash box was on the counter shelf at 16:40. By 17:30 it was gone. Two people held a key, and one volunteer was in the canteen without one.',
+   obj:'Find who satisfied the access and presence conditions, and whether that is enough to say who took the box.',
+   people:[{id:'meera',name:'Meera Shah',role:'Canteen Manager',bg:'Runs the canteen and holds a cash box key.',where:'Present until 17:00 per the entry register.',access:'Cash box key holder.',unk:['Further details are not recorded.']},
+           {id:'kabir',name:'Kabir Rao',role:'Student Volunteer',bg:'Helps with serving on busy afternoons.',where:'Present until 17:25 per the entry register.',access:'No key.',unk:['Further details are not recorded.']},
+           {id:'tanya',name:'Tanya Dsouza',role:'Accountant',bg:'Counts the cash at the end of the day.',where:'Not recorded in the canteen.',access:'Cash box key holder.',unk:['Further details are not recorded.']}],
+   evN:3,
+   ev:[{id:'E1',title:'Key Register',desc:'Keys for the cash box were issued to Meera and Tanya only.',cat:'Document',t:1800,src:'Entered by investigator',rel:'High',ver:'Verified',who:['meera','tanya'],loc:['College Canteen']},
+       {id:'E2',title:'Canteen Entry Register',desc:'Meera in until 17:00. Kabir in until 17:25.',cat:'Access Log',t:1805,src:'Entered by investigator',rel:'High',ver:'Verified',who:['meera','kabir'],loc:['College Canteen']},
+       {id:'E3',title:'Counter Camera Note',desc:'The camera shows the cash box on the shelf at 16:40.',cat:'Camera Observation',t:1810,src:'Entered by investigator',rel:'Medium',ver:'Verified',who:[],loc:['College Canteen']}],
+   facts:[{term:'has_key(meera, cashbox)',ev:'E1',kind:'v'},{term:'has_key(tanya, cashbox)',ev:'E1',kind:'v'},{term:'present(meera, canteen)',ev:'E2',kind:'v'},{term:'present(kabir, canteen)',ev:'E2',kind:'v'},{term:'box_last_seen(1640)',ev:'E3',kind:'v'},{term:'logged_exit(meera, 1700)',ev:'E2',kind:'v'},{term:'logged_exit(kabir, 1725)',ev:'E2',kind:'v'}],
+   rules:'R1: IF has_key(X, cashbox) AND present(X, canteen) THEN can_open(X, cashbox)\nR2: IF present(X, canteen) AND logged_exit(X, T) AND box_last_seen(S) AND lt(S, T) THEN present_after_last_seen(X)\nR3: IF can_open(X, cashbox) AND present_after_last_seen(X) THEN opportunity(X, cashbox)',
+   st:[{who:'kabir',text:'I only helped stack chairs and left at twenty-five past five.',t:1725,ev:'E2'}],
+   tl:[{t:1640,d:'The cash box is seen on the shelf.',who:'',loc:'College Canteen',ev:'E3',ver:'Verified',conflict:''},{t:1700,d:'Meera leaves the canteen.',who:'meera',loc:'College Canteen',ev:'E2',ver:'Verified',conflict:''},{t:1725,d:'Kabir leaves the canteen.',who:'kabir',loc:'College Canteen',ev:'E2',ver:'Verified',conflict:''}],
+   open:'Could someone without a key reach the cash box?\nWas the box removed before or after 17:00?',keyp:'opportunity'});
+  S.draft=D;
+}
+
+/* ===================== events ===================== */
+document.addEventListener('click',e=>{
+  if(S.justDragged){S.justDragged=false;return;}
+  const el=e.target.closest('[data-act]');if(!el) return;
+  if(el.tagName==='A') e.preventDefault();
+  handle(el.dataset.act,el.dataset,el,e);
+});
+document.addEventListener('input',e=>{
+  const el=e.target;if(!el.dataset||!el.dataset.in) return;
+  setKey(el.dataset.in,el.value);
+  if(el.dataset.in==='board.q'||el.dataset.in==='caseId') render(el.dataset.in==='caseId');
+  else render();
+});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();S.search.open=true;S.search.focus=true;render();return;}
+  if(e.key==='Escape'){if(S.confirm) S.confirm=null;else if(S.search.open) S.search.open=false;else if(S.drawer) S.drawer=null;else return;render();}
+  if(e.key==='Enter'&&e.target.id==='in-rs.inp'){handle('rsAdd',{}, e.target,e);e.preventDefault();}
+  if(e.key==='Enter'&&e.target.id==='in-draft.fTerm'){handle('dAddFact',{},e.target,e);e.preventDefault();}
+  if(e.key==='Enter'&&e.target.id==='in-lab.factIn'){handle('labAddFact',{},e.target,e);e.preventDefault();}
+  if(e.key==='Enter'&&(e.target.id==='in-lab.a'||e.target.id==='in-lab.b')){handle('labUnify',{},e.target,e);e.preventDefault();}
+});
+document.addEventListener('wheel',e=>{
+  const svg=e.target.closest&&e.target.closest('#boardsvg');
+  if(!svg||!S.board.vb) return;
+  e.preventDefault();
+  const r=svg.getBoundingClientRect(),v=S.board.vb,f=e.deltaY>0?1.12:1/1.12;
+  const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height,mx=v.x+px*v.w,my=v.y+py*v.h;
+  v.w*=f;v.h*=f;v.x=mx-px*v.w;v.y=my-py*v.h;
+  svg.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);
+},{passive:false});
+let PD=null;
+document.addEventListener('pointerdown',e=>{
+  const svg=e.target.closest&&e.target.closest('#boardsvg');
+  if(!svg||!S.board.vb||e.button>0) return;
+  PD={x:e.clientX,y:e.clientY,vx:S.board.vb.x,vy:S.board.vb.y,moved:false,svg};
+});
+window.addEventListener('pointermove',e=>{
+  if(!PD) return;
+  const r=PD.svg.getBoundingClientRect(),v=S.board.vb;
+  const dx=e.clientX-PD.x,dy=e.clientY-PD.y;
+  if(Math.abs(dx)+Math.abs(dy)>5) PD.moved=true;
+  if(!PD.moved) return;
+  v.x=PD.vx-dx*v.w/r.width;v.y=PD.vy-dy*v.h/r.height;
+  PD.svg.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);
+});
+window.addEventListener('pointerup',()=>{if(PD&&PD.moved){S.justDragged=true;setTimeout(()=>{S.justDragged=false;},50);}PD=null;});
+render(true);
+</script></body></html>
